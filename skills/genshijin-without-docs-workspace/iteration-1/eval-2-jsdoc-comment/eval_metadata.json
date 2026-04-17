@@ -1,0 +1,6 @@
+{
+  "eval_id": 2,
+  "eval_name": "jsdoc-comment",
+  "prompt": "次のTypeScript関数にJSDocコメントを追加して。関数本体は変更せず、コメントのみ追加した完全なコードを output.ts として保存して。\n```ts\nasync function fetchUser(id: string, retries: number = 3): Promise<User | null> {\n  for (let i = 0; i < retries; i++) {\n    try {\n      const res = await fetch(`/api/users/${id}`);\n      if (res.ok) return await res.json();\n    } catch (e) {\n      if (i === retries - 1) throw e;\n    }\n  }\n  return null;\n}\n```",
+  "assertions": []
+}

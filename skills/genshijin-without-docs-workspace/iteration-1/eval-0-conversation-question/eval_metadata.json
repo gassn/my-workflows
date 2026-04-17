@@ -1,0 +1,6 @@
+{
+  "eval_id": 0,
+  "eval_name": "conversation-question",
+  "prompt": "Reactでkey propはなぜ必要なのか教えて",
+  "assertions": []
+}

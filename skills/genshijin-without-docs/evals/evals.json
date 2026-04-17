@@ -1,0 +1,23 @@
+{
+  "skill_name": "genshijin-without-docs",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Reactでkey propはなぜ必要なのか教えて",
+      "expected_output": "返答本文が圧縮されている(敬語なし、体言止め、助詞省略)。技術的内容は正確。",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "TypeScript製のCLIツール『todo-cli』のREADME.mdを作成して。機能: タスク追加・一覧表示・完了マーク。Node.js 20以上。",
+      "expected_output": "README.mdファイルは通常の丁寧な日本語で記述されている(『です/ます』体、完結した文章)。会話返答(作成しました等)は圧縮モード。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "次のTypeScript関数にJSDocコメントを追加して。```ts\nasync function fetchUser(id: string, retries: number = 3): Promise<User | null> {\n  for (let i = 0; i < retries; i++) {\n    try {\n      const res = await fetch(`/api/users/${id}`);\n      if (res.ok) return await res.json();\n    } catch (e) {\n      if (i === retries - 1) throw e;\n    }\n  }\n  return null;\n}\n```",
+      "expected_output": "JSDocコメント内は丁寧な日本語(『です/ます』体可、完結した文章)。会話返答は圧縮モード。",
+      "files": []
+    }
+  ]
+}

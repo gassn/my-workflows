@@ -1,0 +1,6 @@
+{
+  "eval_id": 1,
+  "eval_name": "readme-creation",
+  "prompt": "TypeScript製のCLIツール『todo-cli』のREADME.mdを作成して。機能: タスク追加・一覧表示・完了マーク。Node.js 20以上。",
+  "assertions": []
+}
