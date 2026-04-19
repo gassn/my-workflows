@@ -1,0 +1,2 @@
+# ~/.claude/settings.json への閲覧用シンボリックリンク (実体は dotfiles リポジトリで管理)
+claude-settings.json
