@@ -113,17 +113,25 @@ flowchart LR
 
 ### 1. Spec
 
-**目的**: Brainstorming で解像度の上がった要件を、軽量 Markdown 形式で仕様化します (OpenSpec 流)。
+**目的**: Brainstorming で解像度の上がった要件を、7 章構成の Spec ファイルに具体化します (`writing-spec` skill 担当)。
 
 | 項目 | 内容 |
 |---|---|
-| 担当層 | main agent (対話) |
-| 入力 | Brainstorming ノート |
-| 出力 | Spec ファイル (Markdown、main ブランチ側) |
-| Agent Teams 活用 | × (対話必須) |
-| 品質ゲート | Spec frontmatter (name / description / acceptance criteria) の存在を hook で検証 |
+| 担当層 | main agent (対話、`writing-spec` skill 起動) |
+| 入力 | Brainstorming ノート (`specs/<spec-name>.brainstorm.md`) |
+| 出力 | Spec ファイル (`specs/<spec-name>.md`、7 章構成: 目的 / スコープ / 機能要件 / 非機能要件 / 受け入れ基準 / 非対象 / リスク) + Brainstorming ノートの `specs/archive/` への移動 |
+| Agent Teams 活用 | × (対話必須、並列化は Phase 5 の orchestrator が担当) |
+| 品質ゲート | Spec frontmatter (name / status: spec-complete / brainstorming_archive) の存在を hook で検証 |
 
-**Spec ファイル配置**: `specs/<spec-name>.md` (worktree 外、main 側で管理)
+**Spec ファイル配置**: `specs/<spec-name>.md` (worktree 外、main 側で管理)。Brainstorming ノートは `specs/archive/<spec-name>.brainstorm.md` に移動。
+
+**複数 Spec 処理**: Brainstorming で分割された複数 Spec を Spec 化する際は、`specs/dag.md` の `parallel_group` 順に順次処理します。並列化は本ステージでは行わず、Phase 5 の orchestrator の責務です。
+
+**status 遷移**:
+- Brainstorming ノート: `brainstorming-complete` → `archived` (archive 移動時)
+- Spec ファイル (新規): `spec-complete` (Spec Review 待ち)
+
+詳細手順は `skills/writing-spec/SKILL.md` を参照してください。
 
 ### 2. Spec Review
 
@@ -239,7 +247,7 @@ flowchart LR
 |---|---|---|---|
 | `brainstorming` | Spec 前の要件深掘り (起点、必須) | Brainstorming | superpowers |
 | `spec-dag-builder` | 複数 Spec の依存関係解析、DAG 構築 (段階的アップデート) | DAG 構築 (Brainstorming 後 / Spec Review 後) | 独自 |
-| `writing-spec` | 軽量 Markdown 仕様作成 | Spec | OpenSpec |
+| `writing-spec` | Brainstorming ノートから 7 章構成の Spec を生成、archive 移動、DAG 順処理 | Spec | OpenSpec + 独自 |
 | `spec-review` | AI 自動 Spec レビュー | Spec Review | claude-scrum-team |
 | `spec-leader` | ステージ遷移制御 (Isolate → Code Review) | Isolate〜Code Review | 独自 |
 | `writing-plan` | 技術計画 + タスク分解 | Plan | superpowers + spec-kit |

@@ -1,0 +1,118 @@
+{
+  "skill_name": "writing-spec",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "specs/ の内容を Spec 化してください。",
+      "expected_output": "specs/ に Brainstorming ノートが存在しない場合、エラーメッセージを返して終了。spec.md を生成しない。",
+      "assertions": [
+        {
+          "text": "出力に『Brainstorming ステージが完了していません』『Brainstorming ノートが見つかりません』『brainstorming skill を起動』のいずれかの語が含まれている",
+          "category": "behavior"
+        },
+        {
+          "text": "outputs/specs/ 配下に *.md ファイル (spec.md) を作成していない",
+          "category": "anti-pattern"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "specs/login.brainstorm.md を Spec に書き起こしてください。",
+      "expected_output": "specs/login.md を 7 章構成 (目的 / スコープ / 機能要件 / 非機能要件 / 受け入れ基準 / 非対象 / リスク) で生成。frontmatter に status: spec-complete、brainstorming_archive パス記載。元の brainstorm.md を specs/archive/ に移動し status を archived に更新。",
+      "assertions": [
+        {
+          "text": "outputs/specs/login.md (または outputs/specs/<spec-name>.md) が作成されている",
+          "category": "output-file"
+        },
+        {
+          "text": "生成された spec.md に『目的』『スコープ』『機能要件』『非機能要件』『受け入れ基準』『非対象』『リスク』の 7 章 (または同等の見出し) が含まれている",
+          "category": "format"
+        },
+        {
+          "text": "spec.md の frontmatter に status: spec-complete が含まれている",
+          "category": "format"
+        },
+        {
+          "text": "spec.md の frontmatter に brainstorming_archive パスが記載されている",
+          "category": "format"
+        },
+        {
+          "text": "outputs/specs/archive/ 配下に元の brainstorm.md が移動されている (または archived として記録されている)",
+          "category": "behavior"
+        },
+        {
+          "text": "archive 内の brainstorm.md の frontmatter status が archived に更新されている",
+          "category": "format"
+        }
+      ],
+      "files": [
+        "inputs/specs/login.brainstorm.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "specs/ に 3 つの Brainstorming ノート (auth / order / payment) と dag.md があります。DAG 順に Spec を書き起こしてください。",
+      "expected_output": "specs/dag.md を読み、parallel_group 順 (auth[1] → order[2] → payment[3]) に Spec を生成。各 spec.md に depends_on と parallel_group を Brainstorming から引き継ぎ。全 brainstorm.md を archive に移動。",
+      "assertions": [
+        {
+          "text": "outputs/specs/ に 3 つの spec.md (auth.md / order.md / payment.md) が作成されている",
+          "category": "output-file"
+        },
+        {
+          "text": "各 spec.md の frontmatter に depends_on が Brainstorming から引き継がれている (auth: [], order: [auth], payment: [order])",
+          "category": "format"
+        },
+        {
+          "text": "各 spec.md の frontmatter に parallel_group が Brainstorming から引き継がれている (auth: 1, order: 2, payment: 3)",
+          "category": "format"
+        },
+        {
+          "text": "outputs/specs/archive/ 配下に 3 つの brainstorm.md が移動されている",
+          "category": "behavior"
+        },
+        {
+          "text": "specs/dag.md が outputs/ 配下で書き換えられていない (writing-spec は読み取り専用で dag.md を扱う)",
+          "category": "anti-pattern"
+        }
+      ],
+      "files": [
+        "inputs/specs/auth.brainstorm.md",
+        "inputs/specs/order.brainstorm.md",
+        "inputs/specs/payment.brainstorm.md",
+        "inputs/specs/dag.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "specs/inventory-alert.brainstorm.md (在庫アラート機能の詳細要件) を Spec に起こしてください。",
+      "expected_output": "複雑な要件 (在庫閾値 / 既存メール送信モジュール / 重複通知抑止) を実装判断可能な粒度に具体化した spec.md を生成。Brainstorming ノートの未解決事項 (検知方式、閾値境界、重複通知制御等) を Spec で具体化、できないものは TBD マーク付きで Spec Review に持ち込む形。",
+      "assertions": [
+        {
+          "text": "outputs/specs/inventory-alert.md が作成されている",
+          "category": "output-file"
+        },
+        {
+          "text": "spec.md の機能要件セクションが Brainstorming ノートより具体化されている (入力 / 出力 / エラーハンドリングの記述を含む)",
+          "category": "correctness"
+        },
+        {
+          "text": "spec.md の受け入れ基準が検証可能な粒度で記述されている (曖昧な文言『適切に動作』等を使っていない)",
+          "category": "correctness"
+        },
+        {
+          "text": "Brainstorming ノートの『未解決事項』が spec.md で具体化されているか、TBD マークで明示されている",
+          "category": "behavior"
+        },
+        {
+          "text": "outputs/specs/archive/ 配下に元の brainstorm.md が移動されている",
+          "category": "behavior"
+        }
+      ],
+      "files": [
+        "inputs/specs/inventory-alert.brainstorm.md"
+      ]
+    }
+  ]
+}

@@ -32,7 +32,7 @@
 
 - [x] `brainstorming` (Spec 前段の要件深掘り + Spec 分割提案 + コードベース精査、superpowers 参考、commit `af74607`)
 - [ ] `spec-dag-builder` (複数 Spec の依存関係解析、DAG 構築、段階的アップデート、独自)
-- [ ] `writing-spec` (軽量 Markdown 仕様作成、OpenSpec 参考)
+- [ ] `writing-spec` (Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理、OpenSpec + 独自)
 - [ ] `spec-review` (AI 自動 Spec レビュー、claude-scrum-team 参考)
 - [ ] `spec-leader` (Isolate → Code Review のステージ遷移制御、独自)
 - [ ] `writing-plan` (技術計画 + タスク分解、superpowers + spec-kit 参考)
