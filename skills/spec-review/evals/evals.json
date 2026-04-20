@@ -1,0 +1,72 @@
+{
+  "skill_name": "spec-review",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "specs/complete-login.md のレビューをしてください。",
+      "expected_output": "7 章すべて充足、frontmatter 完備、受け入れ基準が検証可能粒度、TBD 0 件の完成度高い Spec に対して verdict: pass を返し、review.md を specs/complete-login.review.md に生成。scores は各軸 80 点以上。writing-spec 再起動は行わない。",
+      "assertions": [
+        {"text": "outputs/specs/complete-login.review.md が生成されている", "category": "output-file"},
+        {"text": "review.md の frontmatter に verdict: pass が記載されている", "category": "format"},
+        {"text": "review.md の frontmatter に scores (completeness/feasibility/consistency/overall) がすべて 0-100 の範囲で記載されている", "category": "format"},
+        {"text": "各軸の scores が 80 以上 (完成度の高い入力に対する妥当な評価)", "category": "correctness"},
+        {"text": "Critical が 0 件 (§6 合否判定ルールに合致)", "category": "correctness"},
+        {"text": "writing-spec を自動再起動していない (pass 時は spec-leader 未実装のため停止)", "category": "behavior"}
+      ],
+      "files": ["inputs/specs/complete-login.md"]
+    },
+    {
+      "id": 1,
+      "prompt": "specs/broken-payment.md のレビューをしてください。",
+      "expected_output": "機能要件章が欠落、frontmatter に status 欠落、受け入れ基準に『適切に動作』が含まれる等の Critical 欠陥を持つ Spec に対して verdict: reject を返し、Critical 指摘を少なくとも 1 件抽出。修正ガイドセクションを含む review.md を生成。writing-spec をレビュー指摘対応モードで自動再起動する。",
+      "assertions": [
+        {"text": "outputs/specs/broken-payment.review.md が生成されている", "category": "output-file"},
+        {"text": "verdict: reject が記載されている", "category": "format"},
+        {"text": "Critical 指摘が少なくとも 1 件記載されている", "category": "correctness"},
+        {"text": "各指摘に修正提案 (どう直すか) が添えられている", "category": "correctness"},
+        {"text": "完全性のスコアが 70 点未満 (Critical 1 件で -30 点以上)", "category": "correctness"},
+        {"text": "修正ガイドセクションが含まれている (writing-spec 再起動手順)", "category": "format"},
+        {"text": "writing-spec をレビュー指摘対応モードで起動するアクションを報告している", "category": "behavior"}
+      ],
+      "files": ["inputs/specs/broken-payment.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "specs/tbd-notification.md のレビューをしてください。",
+      "expected_output": "Critical はないが TBD 未解消 5 件、リスク緩和策が粗い、非機能要件の粒度が不足等の Major を複数含む Spec に対して verdict: needs-fix を返す。Major 3 件以上を抽出。",
+      "assertions": [
+        {"text": "outputs/specs/tbd-notification.review.md が生成されている", "category": "output-file"},
+        {"text": "verdict: needs-fix が記載されている", "category": "format"},
+        {"text": "Critical が 0 件 かつ Major が 3 件以上 (§6 合否判定ルールに合致)", "category": "correctness"},
+        {"text": "TBD 未解消に関する指摘が含まれている", "category": "correctness"},
+        {"text": "writing-spec を自動再起動するアクションを報告している", "category": "behavior"}
+      ],
+      "files": ["inputs/specs/tbd-notification.md"]
+    },
+    {
+      "id": 3,
+      "prompt": "specs/inconsistent-order.md のレビューをしてください (specs/archive/auth.md と dag.md が既に存在)。",
+      "expected_output": "他 Spec (archive 内 auth) で定義済の API エンドポイントを異なる契約で再定義している、depends_on が dag.md と不整合、既存コードの命名規約と異なる等の整合性問題を抽出。整合性観点で複数の指摘、overall で low score。",
+      "assertions": [
+        {"text": "outputs/specs/inconsistent-order.review.md が生成されている", "category": "output-file"},
+        {"text": "整合性 (consistency) 観点で Critical または Major が少なくとも 1 件記載されている", "category": "correctness"},
+        {"text": "archive 内の他 Spec または dag.md を参照した指摘が含まれている", "category": "correctness"},
+        {"text": "整合性のスコアが 70 点未満", "category": "correctness"},
+        {"text": "verdict が pass 以外 (needs-fix または reject)", "category": "correctness"}
+      ],
+      "files": ["inputs/specs/inconsistent-order.md", "inputs/specs/dag.md", "inputs/specs/archive/auth.md"]
+    },
+    {
+      "id": 4,
+      "prompt": "specs/revised-login.md のレビューをしてください (specs/revised-login.review.md に前回 needs-fix の結果あり)。",
+      "expected_output": "前回の review.md (verdict: needs-fix、Major 3 件) の指摘をすべて反映した改訂版 spec.md に対して、verdict: pass を返す。前回指摘が解消されていることを判定根拠に含める。",
+      "assertions": [
+        {"text": "outputs/specs/revised-login.review.md が上書きされている", "category": "output-file"},
+        {"text": "verdict: pass が記載されている", "category": "format"},
+        {"text": "前回 review.md の指摘が解消されたことに言及した記述が含まれる", "category": "correctness"},
+        {"text": "writing-spec を自動再起動していない (pass のため)", "category": "behavior"}
+      ],
+      "files": ["inputs/specs/revised-login.md", "inputs/specs/revised-login.review.md"]
+    }
+  ]
+}
