@@ -1,0 +1,140 @@
+{
+  "skill_name": "spec-dag-builder",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "specs/ ディレクトリを見て DAG を構築してください。",
+      "expected_output": "specs/ 配下に Brainstorming ノートが 1 件のみ存在する場合、『単一 Spec のため DAG 構築は不要です』と返して終了する。specs/dag.md は作成しない。",
+      "assertions": [
+        {
+          "text": "specs/dag.md ファイルを作成していない",
+          "category": "anti-pattern"
+        },
+        {
+          "text": "出力に『単一 Spec』『DAG 構築は不要』『1 件のみ』等の単一 Spec を示すメッセージが含まれている",
+          "category": "behavior"
+        }
+      ],
+      "files": ["inputs/specs/foo.brainstorm.md"]
+    },
+    {
+      "id": 1,
+      "prompt": "specs/ ディレクトリに 3 つの Brainstorming ノートがあります。DAG を作って依存関係と並列グループを整理してください。",
+      "expected_output": "全 Spec が brainstorming-complete のため『暫定 DAG モード』で動作。警告メッセージを冒頭に含めた specs/dag.md を生成。線形依存 (auth → order → payment) を Mermaid 図と並列グループ表で表現。",
+      "assertions": [
+        {
+          "text": "outputs/ 配下に specs/dag.md ファイルが存在する",
+          "category": "output-file"
+        },
+        {
+          "text": "specs/dag.md に『⚠️ 暫定 DAG』または『暫定 DAG』警告メッセージが含まれている",
+          "category": "behavior"
+        },
+        {
+          "text": "specs/dag.md に Mermaid 図 (```mermaid ブロック) が含まれている",
+          "category": "format"
+        },
+        {
+          "text": "specs/dag.md に並列実行グループ表が含まれている (グループ番号 1, 2, 3 が登場)",
+          "category": "format"
+        },
+        {
+          "text": "各 Spec の frontmatter (outputs/ 配下) に depends_on と parallel_group が追記されている",
+          "category": "format"
+        }
+      ],
+      "files": [
+        "inputs/specs/auth.brainstorm.md",
+        "inputs/specs/order.brainstorm.md",
+        "inputs/specs/payment.brainstorm.md"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "specs/ に 6 つの Spec があり、status が混在しています。DAG を構築してください。",
+      "expected_output": "一部 Spec が spec-approved 以上のため『部分確定 DAG モード』で動作。Mermaid 図で status を視覚的に区別 (shipped: グレー / in-progress: 黄 / spec-approved: 青 / brainstorming-complete: 白)。",
+      "assertions": [
+        {
+          "text": "outputs/ 配下に specs/dag.md が存在する",
+          "category": "output-file"
+        },
+        {
+          "text": "specs/dag.md に『部分確定 DAG』または『部分確定マーク』が含まれている",
+          "category": "behavior"
+        },
+        {
+          "text": "Mermaid 図に classDef (shipped / wip / ready / pending のいずれか) によるスタイル定義が含まれている",
+          "category": "format"
+        },
+        {
+          "text": "specs/dag.md の並列実行グループ表に各 Spec の status が記載されている",
+          "category": "format"
+        }
+      ],
+      "files": [
+        "inputs/specs/auth.brainstorm.md",
+        "inputs/specs/catalog.brainstorm.md",
+        "inputs/specs/order.brainstorm.md",
+        "inputs/specs/payment.brainstorm.md",
+        "inputs/specs/shipping.brainstorm.md",
+        "inputs/specs/admin.brainstorm.md"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "specs/ に循環依存のある 3 つの Spec があります。DAG を構築してください。",
+      "expected_output": "循環依存を検出してエラー表示。修正方法 3 案 (スコープ縮小 / depends_on 修正 / Spec 統合) を提示し、ユーザーに判断を仰ぐ。circular な depends_on を勝手に修正しない。specs/dag.md を作成しない。",
+      "assertions": [
+        {
+          "text": "出力に『循環依存』『循環』『cycle』のいずれかの語が含まれている",
+          "category": "behavior"
+        },
+        {
+          "text": "修正方法の選択肢が 3 つ (スコープ縮小 / depends_on 修正 / Spec 統合) 提示されている",
+          "category": "coverage"
+        },
+        {
+          "text": "specs/dag.md を outputs/ 配下に作成していない (循環解消後に作成すべきため)",
+          "category": "anti-pattern"
+        },
+        {
+          "text": "ユーザー判断を求める問いかけが含まれている (例: 『どの方法で進めますか』)",
+          "category": "behavior"
+        }
+      ],
+      "files": [
+        "inputs/specs/auth.brainstorm.md",
+        "inputs/specs/session.brainstorm.md",
+        "inputs/specs/user.brainstorm.md"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "specs/ に shipped 済みの Spec が含まれています。DAG を構築してください。",
+      "expected_output": "shipped 済みの Spec はグレー (点線) で表示し、orchestrator のスキップ対象として明記。残りの未完了 Spec は通常表示。並列実行グループ表で status を必ず併記。",
+      "assertions": [
+        {
+          "text": "outputs/ 配下に specs/dag.md が存在する",
+          "category": "output-file"
+        },
+        {
+          "text": "Mermaid 図に shipped 用のスタイル (例: stroke-dasharray、または点線、またはグレー fill) が含まれている",
+          "category": "format"
+        },
+        {
+          "text": "推奨実行順序の説明に『shipped』『スキップ』のいずれかの語が含まれている",
+          "category": "behavior"
+        },
+        {
+          "text": "shipped Spec も DAG ノードとしては表示されている (依存元として残す)",
+          "category": "format"
+        }
+      ],
+      "files": [
+        "inputs/specs/auth.brainstorm.md",
+        "inputs/specs/catalog.brainstorm.md",
+        "inputs/specs/order.brainstorm.md"
+      ]
+    }
+  ]
+}

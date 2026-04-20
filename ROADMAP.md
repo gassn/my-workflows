@@ -28,12 +28,13 @@
 
 `docs/workflow.md` で定義した 9 フェーズ (Spec / Spec Review / Isolate / Plan / Implement / Verify / Code Review / ship / Learn) を **単一 Spec 前提** で動作するよう実装します。orchestrator は Phase 5 で追加します。
 
-### skill (10 種)
+### skill (11 種)
 
-- [ ] `brainstorming` (Spec 前段の要件深掘り、superpowers 参考)
+- [x] `brainstorming` (Spec 前段の要件深掘り + Spec 分割提案 + コードベース精査、superpowers 参考、commit `af74607`)
+- [ ] `spec-dag-builder` (複数 Spec の依存関係解析、DAG 構築、段階的アップデート、独自)
 - [ ] `writing-spec` (軽量 Markdown 仕様作成、OpenSpec 参考)
 - [ ] `spec-review` (AI 自動 Spec レビュー、claude-scrum-team 参考)
-- [ ] `spec-leader` (Isolate → Code Review のフェーズ遷移制御、独自)
+- [ ] `spec-leader` (Isolate → Code Review のステージ遷移制御、独自)
 - [ ] `writing-plan` (技術計画 + タスク分解、superpowers + spec-kit 参考)
 - [ ] `tdd-driver` (テスト先行強制、superpowers 参考)
 - [ ] `verification-before-completion` (完了前検証強制、superpowers 参考)

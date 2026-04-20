@@ -47,10 +47,14 @@ orchestrator (Phase 5 で実装)
 
 ```mermaid
 flowchart LR
-    Z[Brainstorming] --> A[Spec]
+    Z[Brainstorming] --> Y{複数Spec?}
+    Y -->|はい| X[DAG 構築]
+    Y -->|いいえ| A[Spec]
+    X --> A
     A --> B[Spec Review]
-    B -->|承認| C[Isolate]
+    B -->|承認| X2[DAG 構築 - 確定]
     B -->|差戻し| A
+    X2 --> C[Isolate]
     C --> D[Plan]
     D --> E[Implement]
     E --> F[Verify]
@@ -61,6 +65,8 @@ flowchart LR
     H --> I[Learn]
     I -.->|skill 改善| Z
 ```
+
+**DAG 構築ステージは段階的アップデート方式**: 同一 skill を Brainstorming 直後 (暫定 DAG) と Spec Review 完了後 (確定 DAG) の 2 回起動します。複数 Spec が無い場合はスキップします。
 
 ## 各ステージ詳細
 
@@ -83,6 +89,27 @@ flowchart LR
 **スコープ過大時の分割**: ヒアリング結果が単一 Spec として大きすぎると判定した場合、本ステージで複数 Spec への分割を提案します。分割軸 (機能 / Release Phase / データ / 層) と分割案をユーザーに提示し、承認を得てから複数の Brainstorming ノートを生成します。分割判定基準と運用ルールは `skills/brainstorming/SKILL.md` のセクション 10 に記載されています。分割後のノートには Spec 間依存関係 (`depends_on`) を明記し、Phase 5 の orchestrator が DAG 解決に利用できるようにします。
 
 **Brainstorming ノート配置**: `specs/<spec-name>.brainstorm.md` (Spec ファイルと並置、main ブランチ側)。分割時は共通接頭辞を使用 (例: `specs/ecsite-auth.brainstorm.md`, `specs/ecsite-payment.brainstorm.md`)。
+
+### 0.5. DAG 構築 (Brainstorming で複数 Spec に分割した場合のみ)
+
+**目的**: 複数 Spec の依存関係を解析し、orchestrator (Phase 5) が起動順序を判断できる DAG を構築します。
+
+| 項目 | 内容 |
+|---|---|
+| 担当層 | main agent (対話、`spec-dag-builder` skill 起動) |
+| 入力 | 複数の Brainstorming ノート (`specs/*.brainstorm.md`) |
+| 出力 | 各ノートへの `depends_on` / `parallel_group` / `status` 追記 + `specs/dag.md` (Mermaid 図 + 並列実行グループ + 推奨実行順序) |
+| Agent Teams 活用 | × (対話 + 推測ロジックは main agent で実行) |
+| 品質ゲート | 循環依存 (cycle) 検出時はエラーを返し、Brainstorming ステージへ差し戻し |
+
+**段階的アップデート方式**: 同一 skill (`spec-dag-builder`) を 2 回起動します。
+
+- **1 回目 (Brainstorming 直後)**: 暫定 DAG。全 Spec が `brainstorming-complete` 段階のため依存関係は粗い推測。`specs/dag.md` の冒頭に警告メッセージを含める
+- **2 回目 (Spec Review 完了後)**: 確定 DAG。詳細仕様を反映した正確な依存関係。orchestrator はこの確定 DAG を消費する
+
+**スキップ条件**: Brainstorming ステージで Spec が分割されず単一の場合、本ステージはスキップします。本 skill は単一 Spec 入力時に「DAG 構築は不要です」と返す設計です。
+
+**Phase 5 (orchestrator) との連携**: 本 skill の出力 (`specs/dag.md` + 各 Spec の frontmatter) は orchestrator agent の **唯一の入力データ** です。詳細は `skills/spec-dag-builder/SKILL.md` のセクション 12 を参照してください。
 
 ### 1. Spec
 
@@ -211,6 +238,7 @@ flowchart LR
 | skill 名 | 役割 | 担当ステージ | 参考 |
 |---|---|---|---|
 | `brainstorming` | Spec 前の要件深掘り (起点、必須) | Brainstorming | superpowers |
+| `spec-dag-builder` | 複数 Spec の依存関係解析、DAG 構築 (段階的アップデート) | DAG 構築 (Brainstorming 後 / Spec Review 後) | 独自 |
 | `writing-spec` | 軽量 Markdown 仕様作成 | Spec | OpenSpec |
 | `spec-review` | AI 自動 Spec レビュー | Spec Review | claude-scrum-team |
 | `spec-leader` | ステージ遷移制御 (Isolate → Code Review) | Isolate〜Code Review | 独自 |
