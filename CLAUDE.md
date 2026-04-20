@@ -88,7 +88,7 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 
 - `brainstorming` — Spec 前の必須ヒアリング起点。Spec 分割提案 + コードベース精査機能も含む。eval iteration-2 で with_skill 100% / without_skill 65% (Delta +35%) を確認済み
 - `spec-dag-builder` — 複数 Spec の依存関係解析、DAG 構築 (段階的アップデート方式、循環検出)。eval iteration-1 で 5 ケース全通過 (100%)
-- `writing-spec` — Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理。**eval iteration-1 未実施**
+- `writing-spec` — Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理。eval iteration-1 で with_skill 100% (18/18) / without_skill 62.5% (10/16) / Delta +37.5pt を確認済み
 
 **未実装 (8 skill)**:
 
