@@ -21,15 +21,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ├── ROADMAP.md                         # Phase 1〜6 の段階的構築計画
 ├── docs/
 │   ├── genshijin.md                   # genshijin モードの使い方メモ
-│   └── frameworks.md                  # 参考フレームワーク一覧と取捨選択方針
+│   ├── frameworks.md                  # 参考フレームワーク一覧と取捨選択方針
+│   ├── workflow.md                    # 開発ワークフロー定義 (9 ステージ + 3 層階層)
+│   └── glossary.md                    # 用語集 (Project Phase / Workflow Stage / Release Phase / Spec)
+├── hooks/                             # 既存スクリプト (SessionStart 等、Phase 4 で本格統合予定)
 └── skills/
     ├── <skill-name>/
     │   ├── SKILL.md                   # skill 本体 (frontmatter + 本文)
     │   └── evals/evals.json           # skill の評価セット (skill-creator 互換)
-    └── <skill-name>-workspace/        # skill-creator が生成する eval 実行結果 (iteration ごと)
+    └── <skill-name>-workspace/        # skill-creator が生成する eval 実行結果 (.gitignore で除外)
         └── iteration-N/eval-X-.../
             ├── with_skill/outputs/    # skill 有効時の出力
-            └── without_skill/outputs/ # skill 無効時の比較出力
+            └── without_skill/outputs/ # skill 無効時の比較出力 (省略時あり)
 ```
 
 ## skill の配置と有効化
@@ -69,11 +72,38 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 5. **gstack**: 役割分離の粒度
 6. **everything-claude-code**: 大規模化時の組織化
 
-## 既存 skill: genshijin-without-docs
+## 既存 skill
+
+### genshijin-without-docs
 
 会話返答を圧縮 (トークン約75%削減) しつつ、**ドキュメント・コードコメント・コミットメッセージ・PR・.md ファイル** は通常の丁寧な日本語を維持する skill です。強度は `丁寧 / 通常 / 極限 (デフォルト)` の3段階。
 
 この skill を modify する際は `skills/genshijin-without-docs/evals/evals.json` の3ケース (会話返答 / README作成 / JSDocコメント) で回帰を確認してください。
+
+### Phase 3 ワークフロー skill (2026-04 時点、3/11 完了)
+
+ワークフロー (`docs/workflow.md`) に沿って実装中の skill 群です。Brainstorming → DAG 構築 → Spec → Spec Review → Isolate → Plan → Implement → Verify → Code Review → ship → Learn の 9 ステージをカバーします。
+
+**実装済 (3 skill)**:
+
+- `brainstorming` — Spec 前の必須ヒアリング起点。Spec 分割提案 + コードベース精査機能も含む。eval iteration-2 で with_skill 100% / without_skill 65% (Delta +35%) を確認済み
+- `spec-dag-builder` — 複数 Spec の依存関係解析、DAG 構築 (段階的アップデート方式、循環検出)。eval iteration-1 で 5 ケース全通過 (100%)
+- `writing-spec` — Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理。**eval iteration-1 未実施**
+
+**未実装 (8 skill)**:
+
+- `spec-review` (AI 自動 Spec レビュー)
+- `spec-leader` (Isolate → Code Review のステージ遷移制御、単独動作可能設計)
+- `writing-plan` (技術計画 + タスク分解)
+- `tdd-driver` (テスト先行強制)
+- `verification-before-completion` (完了前検証強制)
+- `receiving-code-review` (レビュー指摘対応)
+- `cross-model-review` (Codex 等の独立モデルレビュー)
+- `learn` (振り返り + 改善提案)
+
+**設計方針**: specLeader は Phase 5 の orchestrator から呼ばれる前提のインタフェース (入力: spec ファイルパス、出力: 進捗ファイル + 結果ファイルパス) を Phase 3 時点で確定し、Phase 5 で改修不要にします。
+
+新しい skill を設計する際は `docs/workflow.md` でステージ位置を確認し、`docs/glossary.md` の用語定義に従ってください。
 
 ## ドキュメント記述のルール
 
