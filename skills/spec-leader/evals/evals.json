@@ -1,0 +1,66 @@
+{
+  "skill_name": "spec-leader",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "spec-leader を起動し、specs/nonexistent.md の実装を開始してください。",
+      "expected_output": "Spec ファイルが存在しないため前提条件チェックで失敗し、エラーメッセージを返して終了。progress.json / worktree は生成しない。",
+      "assertions": [
+        {"text": "出力に『対象 Spec が見つかりません』または『specs/nonexistent.md』『存在しません』のいずれかの語が含まれている", "category": "behavior"},
+        {"text": "outputs/worktrees/ 配下に新規 worktree が作成されていない", "category": "anti-pattern"},
+        {"text": "outputs/specs/ 配下に progress.json が作成されていない", "category": "anti-pattern"}
+      ],
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "spec-leader を起動し、specs/login.md の実装を開始してください。",
+      "expected_output": "前提条件 (spec.md 存在 + status: spec-complete + review.md verdict: pass) を満たす Spec に対し、Isolate ステージで git worktree を作成し progress.json / progress.md を生成。Plan ステージで writing-plan skill 未実装を検出して blocked、result.json は verdict: paused で生成。",
+      "assertions": [
+        {"text": "outputs/specs/login.progress.json が生成されている", "category": "output-file"},
+        {"text": "progress.json の stages.isolate.status が completed", "category": "correctness"},
+        {"text": "progress.json の stages.isolate.outputs に worktree パスと branch 名が記録されている", "category": "format"},
+        {"text": "progress.json の stages.plan.status が blocked (writing-plan 未実装)", "category": "correctness"},
+        {"text": "progress.json の stages.plan.missing_skill に writing-plan が記載されている", "category": "format"},
+        {"text": "outputs/worktrees/login/progress.md が生成されている", "category": "output-file"},
+        {"text": "outputs/worktrees/login/specs/login.md が存在している (worktree 内から参照可能)", "category": "behavior"},
+        {"text": "outputs/specs/login.result.json が生成され、verdict が paused", "category": "correctness"},
+        {"text": "Implement / Verify / Code Review / ship は pending のまま (blocked から飛ばしていない)", "category": "correctness"}
+      ],
+      "files": ["inputs/specs/login.md", "inputs/specs/login.review.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "spec-leader を起動し、specs/login.md の実装を開始してください。(review.md が存在しない状態)",
+      "expected_output": "review.md が存在しないため前提条件チェックで失敗、spec-review の起動を促すメッセージを返して終了。worktree / progress は生成しない。",
+      "assertions": [
+        {"text": "出力に『Spec Review が未実施』『spec-review を先に』『review.md が存在しません』のいずれかの語が含まれている", "category": "behavior"},
+        {"text": "outputs/worktrees/ 配下に worktree が作成されていない", "category": "anti-pattern"},
+        {"text": "outputs/specs/ 配下に progress.json が作成されていない", "category": "anti-pattern"}
+      ],
+      "files": ["inputs/specs/login.md"]
+    },
+    {
+      "id": 3,
+      "prompt": "spec-leader を起動し、specs/login.md の実装を開始してください。(review.md の verdict が needs-fix の状態)",
+      "expected_output": "verdict が pass でないため前提条件チェックで失敗、writing-spec レビュー指摘対応モードへの誘導メッセージを返して終了。",
+      "assertions": [
+        {"text": "出力に『verdict が』『pass でない』『writing-spec』『レビュー指摘対応』のいずれかの語が含まれている", "category": "behavior"},
+        {"text": "outputs/worktrees/ 配下に worktree が作成されていない", "category": "anti-pattern"},
+        {"text": "outputs/specs/ 配下に progress.json が作成されていない", "category": "anti-pattern"}
+      ],
+      "files": ["inputs/specs/login.md", "inputs/specs/login.review.md"]
+    },
+    {
+      "id": 4,
+      "prompt": "spec-leader を再起動してください (specs/login.progress.json が既に存在、worktrees/login/ も存在する状態)。",
+      "expected_output": "再開モードとして起動。progress.json を読み込み、最終状態をユーザーに提示して再開点の承認を求める。自動でステージを進めない。",
+      "assertions": [
+        {"text": "出力に『再開モード』『progress』『最終状態』のいずれかの語が含まれている", "category": "behavior"},
+        {"text": "出力にユーザー確認を求める記述が含まれている (どこから再開するか)", "category": "behavior"},
+        {"text": "progress.json の内容を変更していない (ユーザー確認前に自動進行していない)", "category": "correctness"}
+      ],
+      "files": ["inputs/specs/login.md", "inputs/specs/login.review.md", "inputs/specs/login.progress.json", "inputs/worktrees/login/progress.md"]
+    }
+  ]
+}
