@@ -82,6 +82,7 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 複数 Spec を並列実行する orchestrator agent を追加します。Phase 3 で確定したインタフェースに沿って specLeader を呼び出し、specLeader 自体は改修不要にします。
 
 - [ ] **orchestrator agent** 実装 (複数 Spec の DAG 管理、specLeader 起動、merge 順序制御)
+- [ ] **investigator agent 役割拡張**: Plan ステージ専用 → Brainstorming + Plan 両ステージで使用 (brainstorming skill 内のコードベース精査ロジックを agent に委譲)
 - [ ] **DAG 管理**: Spec 間依存関係の定義と解決
 - [ ] **Agent Teams 多階層 subagent の動作検証**: orchestrator → specLeader → workers の 3 層が動作するか確認
   - 動作しない場合: state ファイル経由の擬似並列方式に切り替え

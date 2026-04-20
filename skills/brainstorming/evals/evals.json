@@ -1,0 +1,101 @@
+{
+  "skill_name": "brainstorming",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "ログイン機能を追加したい。",
+      "expected_output": "brainstorming skill が自動起動され、いきなり Spec ファイル (specs/*.md) を作成しない。代わりに目的・利用者・成功条件・制約・スコープ等についてユーザーへ質問を返す。",
+      "assertions": [
+        {
+          "text": "出力に質問が少なくとも 1 つ含まれている (?マーク または『教えて』『どんな』『何』等の疑問表現)",
+          "category": "behavior"
+        },
+        {
+          "text": "Spec ファイル (specs/*.md または specs/*.brainstorm.md) を outputs/ 配下に作成していない",
+          "category": "anti-pattern"
+        },
+        {
+          "text": "目的・利用者・成功条件・制約・スコープのいずれかについて言及または質問している",
+          "category": "coverage"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "新しい仕事を始めたい。EC サイトの管理画面に在庫アラート機能を追加したい。在庫が 10 個を切ったら管理者にメール通知。利用者は自分一人。既存のメール送信モジュールは使い回せる。来月リリース予定。スコープ外: SMS 通知、Slack 連携。これで Spec フェーズに進んで良い。",
+      "expected_output": "specs/<spec-name>.brainstorm.md (例: specs/inventory-alert.brainstorm.md) が作成される。ファイル内容に frontmatter (name / created / status) と『目的』『利用者』『成功条件』『制約』『スコープ』『代替案』『リスク』『未解決事項』のセクションが含まれている。日本語で記述されている。",
+      "assertions": [
+        {
+          "text": "outputs/ 配下に *.brainstorm.md ファイルが存在する",
+          "category": "output-file"
+        },
+        {
+          "text": "Brainstorming ノート内に frontmatter (name / created / status) が含まれている",
+          "category": "format"
+        },
+        {
+          "text": "Brainstorming ノート内に『目的』『利用者』『成功条件』『制約』『スコープ』『代替案』『リスク』『未解決事項』のセクションが網羅されている",
+          "category": "format"
+        },
+        {
+          "text": "Brainstorming ノートが日本語で記述されている",
+          "category": "language"
+        },
+        {
+          "text": "ノートの『含まないもの (明示的に除外)』に SMS 通知 と Slack 連携 が記載されている",
+          "category": "content-fidelity"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "通知機能を作りたい。",
+      "expected_output": "ヒアリング途中で勝手に Spec フェーズへ遷移しない。十分な情報が揃わないうちに Brainstorming ノートを作成しない。ユーザーから明示的な承認 (例: 『次に進んで』『Spec 書いて良い』) を得るまで完了判定を行わない。",
+      "assertions": [
+        {
+          "text": "Brainstorming ノート (specs/*.brainstorm.md) を outputs/ 配下に作成していない",
+          "category": "anti-pattern"
+        },
+        {
+          "text": "出力にヒアリング質問が少なくとも 1 つ含まれている",
+          "category": "behavior"
+        },
+        {
+          "text": "勝手に Spec フェーズへ自動遷移していない (= ユーザー承認確認の問いかけなしに次フェーズへ進む発言をしていない)",
+          "category": "anti-pattern"
+        }
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "EC サイトを一から作りたい。商品管理・在庫管理・注文処理・決済 (クレカ + コンビニ払い)・会員認証 (メール + ソーシャル)・管理画面・配送追跡・レビュー機能・クーポン機能がすべて必要。想定ユーザーは数千人。来年 Q2 までに MVP リリース、その後段階的に機能追加予定。",
+      "expected_output": "単一 Spec では大きすぎると判定し、分割を提案する。分割軸 (機能単位 / フェーズ単位 / データ単位 / 層単位) のいずれかを提示し、ユーザー承認を求める。この段階では複数ノートを勝手に生成しない。",
+      "assertions": [
+        {
+          "text": "出力に『分割』『Spec に分ける』『複数 Spec』等、Spec を複数に分けることを提案する文言が含まれている",
+          "category": "behavior"
+        },
+        {
+          "text": "分割軸 (機能単位 / フェーズ単位 / データ単位 / 層 のいずれか) の候補が 2 つ以上提示されている",
+          "category": "coverage"
+        },
+        {
+          "text": "分割推奨の理由 (判定基準への該当) が具体的に述べられている (例: 『機能領域が複数』『成功条件が多数』等)",
+          "category": "coverage"
+        },
+        {
+          "text": "ユーザー承認を求める問いかけが含まれている (例: 『この分割で進めて良いか』)",
+          "category": "behavior"
+        },
+        {
+          "text": "outputs/ 配下に複数の *.brainstorm.md ファイルを勝手に生成していない (承認待ち段階のため)",
+          "category": "anti-pattern"
+        }
+      ],
+      "files": []
+    }
+  ]
+}
