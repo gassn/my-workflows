@@ -1,0 +1,36 @@
+{
+  "skill_name": "tdd-driver",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "worktrees/login/plans/login.md の T-1 (ログイン API 実装) を開始してください。",
+      "expected_output": "実装より先にテストファイルを作成し、Red を確認してから最小実装で Green にする TDD サイクルを案内。developer agent 呼び出し時にテスト先行の前提を含める。",
+      "assertions": [
+        {"text": "出力に『テスト先行』『Red』『Green』『テストを先に書く』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "実装ファイル (.ts/.py/.go 等) を先に編集する指示をしていない", "category": "anti-pattern"},
+        {"text": "テストファイルのパスが提示されている", "category": "correctness"}
+      ],
+      "files": ["inputs/plans/login.md"]
+    },
+    {
+      "id": 1,
+      "prompt": "src/auth/login.ts を直接編集して実装を追加してください (テストは後で書く予定)。",
+      "expected_output": "テストなしで実装編集しようとしたため、tdd-driver が介入。テスト先行を促してブロックまたは警告。",
+      "assertions": [
+        {"text": "出力に『テストが存在しません』『テストを先に』『TDD サイクルに違反』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "テストなしで src/auth/login.ts を直接編集する操作を承認していない", "category": "anti-pattern"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "タスク T-1 を完了としてマークしてください (テスト未作成の状態)。",
+      "expected_output": "テスト未作成のため完了マークを拒否。TDD サイクル未完と判定。",
+      "assertions": [
+        {"text": "出力に『テスト未作成』『完了できない』『TDD』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "Plan のチェックボックスを `[x]` に変更していない", "category": "anti-pattern"}
+      ],
+      "files": ["inputs/plans/login.md"]
+    }
+  ]
+}

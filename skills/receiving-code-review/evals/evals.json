@@ -1,0 +1,38 @@
+{
+  "skill_name": "receiving-code-review",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "worktrees/login/reviews/ に 3 reviewer の結果 (code: needs-fix, security: pass, cross-model: needs-fix) があります。指摘を反映してください。",
+      "expected_output": "consolidated.md を生成し、Plan にレビュー指摘対応タスクを追加。Critical → Major → Minor の順で処理。security は pass のため当該 reviewer 分の追加はなし。",
+      "assertions": [
+        {"text": "outputs/reviews/consolidated.md が生成されている", "category": "output-file"},
+        {"text": "consolidated.md に統合判定 (needs-fix 等) が記載されている", "category": "format"},
+        {"text": "Plan ファイルにレビュー指摘対応タスクが追加されている", "category": "correctness"},
+        {"text": "優先度順 (Critical → Major → Minor) で記載されている", "category": "correctness"}
+      ],
+      "files": ["inputs/reviews/code.md", "inputs/reviews/security.md", "inputs/reviews/cross-model.md", "inputs/plans/login.md"]
+    },
+    {
+      "id": 1,
+      "prompt": "Code Review ループが 3 回目を超えました。次の反映を開始してください。",
+      "expected_output": "循環防止ルールに従い、自動再実行を停止しユーザーに相談。Spec / Plan への差戻しを提案。",
+      "assertions": [
+        {"text": "出力に『循環防止』『3 回を超えた』『ユーザーに相談』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "自動再実行を継続していない", "category": "anti-pattern"},
+        {"text": "Spec Review や writing-spec への差戻し提案が含まれる", "category": "correctness"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "reject 指摘がありますが無視して ship したいです。",
+      "expected_output": "reject 指摘は無視不可と明示、Critical を反映してから再 review が必要と説明。",
+      "assertions": [
+        {"text": "出力に『reject を無視できない』『Critical を反映』『再 review』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "ship を承認していない", "category": "anti-pattern"}
+      ],
+      "files": []
+    }
+  ]
+}

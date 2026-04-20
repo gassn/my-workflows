@@ -80,26 +80,32 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 
 この skill を modify する際は `skills/genshijin-without-docs/evals/evals.json` の3ケース (会話返答 / README作成 / JSDocコメント) で回帰を確認してください。
 
-### Phase 3 ワークフロー skill (2026-04 時点、5/11 完了)
+### Phase 3 ワークフロー skill (2026-04 時点、11/11 完了)
 
 ワークフロー (`docs/workflow.md`) に沿って実装中の skill 群です。Brainstorming → DAG 構築 → Spec → Spec Review → Isolate → Plan → Implement → Verify → Code Review → ship → Learn の 9 ステージをカバーします。
 
-**実装済 (5 skill)**:
+**実装済 (11 skill)**:
 
-- `brainstorming` — Spec 前の必須ヒアリング起点。Spec 分割提案 + コードベース精査機能も含む。eval iteration-2 で with_skill 100% / without_skill 65% (Delta +35%) を確認済み
-- `spec-dag-builder` — 複数 Spec の依存関係解析、DAG 構築 (段階的アップデート方式、循環検出)。eval iteration-1 で 5 ケース全通過 (100%)
-- `writing-spec` — Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理。eval iteration-1 で with_skill 100% (18/18) / without_skill 62.5% (10/16) / Delta +37.5pt を確認済み。§11 で spec-review を自動起動、§13 でレビュー指摘対応モードに対応
-- `spec-review` — AI による Spec 自動レビュー (完全性 / 実現可能性 / 整合性の 3 観点を main agent で順次実行、Phase 5 で agent 3 並列化)。verdict (pass / needs-fix / reject) を specs/<spec-name>.review.md に出力。needs-fix / reject 時は writing-spec をレビュー指摘対応モードで自動再起動。**eval iteration-1 未実施**
-- `spec-leader` — Isolate → Plan → Implement → Verify → Code Review → ship の 6 ステージ遷移制御。単独動作可能、入力 spec_path / 出力 progress.json + result.json の Phase 5 orchestrator 連携インタフェースを確定済み。Phase 3 初期は Isolate で作動 → Plan で writing-plan 未実装のため blocked (verdict: paused) が標準動作。iteration-1 は限定テスト (前提条件 / Isolate / 未実装検出 / 再開モード) を実施
+| # | skill | 役割 | eval 状態 |
+|---|---|---|---|
+| 1 | `brainstorming` | Spec 前の必須ヒアリング起点。Spec 分割提案 + コードベース精査 | iteration-2 完了 (with 100% / without 65% / Delta +35pt) |
+| 2 | `spec-dag-builder` | 複数 Spec の依存関係解析、DAG 構築 (段階的アップデート、循環検出) | iteration-1 完了 (5/5 通過) |
+| 3 | `writing-spec` | Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理、§13 レビュー指摘対応モード | iteration-1 完了 (with 100% / without 62.5% / Delta +37.5pt) |
+| 4 | `spec-review` | Spec 自動レビュー (完全性 / 実現可能性 / 整合性の 3 観点、main agent 順次実行 → Phase 5 で agent 3 並列化)、writing-spec 自動再起動 | 未実施 |
+| 5 | `spec-leader` | Isolate → ship の 6 ステージ遷移制御。Phase 5 orchestrator 連携インタフェース確定済 | 限定テスト準備済 (未実施) |
+| 6 | `writing-plan` | Plan ステージ: spec.md → plans/<spec-name>.md、技術設計 + タスク分解 (チェックボックス形式) | 未実施 |
+| 7 | `tdd-driver` | Implement ステージ: TDD 強制 (Red → Green → Refactor)、Phase 4 で PreToolUse hook 化予定 | 未実施 |
+| 8 | `verification-before-completion` | Verify ステージ: 完了宣言前の全検証 (test / lint / type / 手動 AC) 強制、Phase 4 で Stop hook 化予定 | 未実施 |
+| 9 | `receiving-code-review` | Code Review 差戻し対応: reviewer 指摘の集約 + Plan タスク追加 + 修正 loop (最大 3 回) | 未実施 |
+| 10 | `cross-model-review` | Codex / GPT / Gemini 等の独立モデルレビュー、Phase 3 は手動依頼テンプレート | 未実施 |
+| 11 | `learn` | ship 後の振り返り: 時間配分 / 手戻り / Keep / Problem / Try パッチ案生成 | 未実施 |
 
-**未実装 (6 skill)**:
+**設計方針の一貫性**:
 
-- `writing-plan` (技術計画 + タスク分解)
-- `tdd-driver` (テスト先行強制)
-- `verification-before-completion` (完了前検証強制)
-- `receiving-code-review` (レビュー指摘対応)
-- `cross-model-review` (Codex 等の独立モデルレビュー)
-- `learn` (振り返り + 改善提案)
+- skill 間連携は自動起動 (writing-spec → spec-review → spec-leader → writing-plan → tdd-driver → verification → (Code Review reviewer 群 + cross-model-review) → receiving-code-review → ship → learn)
+- specLeader は Phase 5 orchestrator 連携インタフェース (入力 spec_path / 出力 progress.json + result.json) を確定済、Phase 5 で skill 改修不要
+- Phase 4 hook 化対応: tdd-driver / verification-before-completion の強制部分は hook 化予定だが skill インタフェースは変更なし
+- 下位 skill 未実装時の扱い: spec-leader §16 で blocked 状態を記録、全停止 + ユーザー相談 (Q3 確定)
 
 **設計方針**: specLeader は Phase 5 の orchestrator から呼ばれる前提のインタフェース (入力: spec ファイルパス、出力: 進捗ファイル + 結果ファイルパス) を Phase 3 時点で確定し、Phase 5 で改修不要にします。
 

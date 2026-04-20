@@ -1,0 +1,27 @@
+{
+  "spec": "login",
+  "spec_path": "specs/login.md",
+  "review_path": "specs/login.review.md",
+  "started_at": "2026-04-20T22:00:00Z",
+  "updated_at": "2026-04-20T22:05:00Z",
+  "current_stage": "plan",
+  "stages": {
+    "isolate": {
+      "status": "completed",
+      "started_at": "2026-04-20T22:00:00Z",
+      "completed_at": "2026-04-20T22:00:30Z",
+      "outputs": {"worktree": "worktrees/login/", "branch": "spec/login"}
+    },
+    "plan": {
+      "status": "blocked",
+      "started_at": "2026-04-20T22:00:35Z",
+      "completed_at": null,
+      "outputs": null,
+      "missing_skill": "writing-plan"
+    },
+    "implement": {"status": "pending", "started_at": null, "completed_at": null, "outputs": null},
+    "verify": {"status": "pending", "started_at": null, "completed_at": null, "outputs": null},
+    "code_review": {"status": "pending", "started_at": null, "completed_at": null, "outputs": null},
+    "ship": {"status": "pending", "started_at": null, "completed_at": null, "outputs": null}
+  }
+}

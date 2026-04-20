@@ -1,0 +1,38 @@
+{
+  "skill_name": "writing-plan",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "worktrees/login/specs/login.md を Plan に展開してください。",
+      "expected_output": "技術設計 + タスク分解 (チェックボックス形式) を含む plans/login.md を生成。各タスクにテスト先行記述あり。frontmatter status: plan-complete。",
+      "assertions": [
+        {"text": "outputs/plans/login.md が作成されている", "category": "output-file"},
+        {"text": "章構成に『技術設計概要』『アーキテクチャ』『データモデル』『API 設計』『実装タスク分解』『テスト戦略』『リスクと対応』のいずれか 5 つ以上の同等見出しが含まれる", "category": "format"},
+        {"text": "タスク分解セクションに `- [ ] T-N:` 形式のチェックボックスが 3 つ以上含まれる", "category": "format"},
+        {"text": "各タスクに『テスト』『テスト先行』等、先行テストに関する記述が含まれる", "category": "correctness"},
+        {"text": "frontmatter に status: plan-complete が含まれる", "category": "format"}
+      ],
+      "files": ["inputs/specs/login.md"]
+    },
+    {
+      "id": 1,
+      "prompt": "worktrees/login/specs/login.md を Plan に展開してください。(plans/login.md が既に存在)",
+      "expected_output": "既存 Plan の上書き確認を求める。ユーザー承認なしに上書きしない。",
+      "assertions": [
+        {"text": "出力に『既に存在』『上書き』『ユーザー承認』等の語が含まれる", "category": "behavior"},
+        {"text": "既存 plans/login.md が書き換えられていない", "category": "anti-pattern"}
+      ],
+      "files": ["inputs/specs/login.md", "inputs/plans/login.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "specs/login.md (worktree 外、main 側) を Plan に展開してください。",
+      "expected_output": "作業ディレクトリが worktree でないため前提条件違反で停止。",
+      "assertions": [
+        {"text": "出力に『worktree』『main』のいずれか + 『停止』『エラー』『動作しません』等の語が含まれる", "category": "behavior"},
+        {"text": "plans/ 配下にファイルが作成されていない", "category": "anti-pattern"}
+      ],
+      "files": ["inputs/specs/login.md"]
+    }
+  ]
+}

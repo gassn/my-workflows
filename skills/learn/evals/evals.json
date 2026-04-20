@@ -1,0 +1,37 @@
+{
+  "skill_name": "learn",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "specs/login の ship が完了したので振り返りを実行してください。",
+      "expected_output": "progress.json と result.json から各ステージの時間・ループ回数を抽出、Keep / Problem / Try の 3 セクションを含む learn.md を生成。Try には具体的なパッチ案 (対象ファイル / 変更内容 / 期待効果) が含まれる。",
+      "assertions": [
+        {"text": "outputs/specs/archive/login.learn.md が生成されている", "category": "output-file"},
+        {"text": "時間配分テーブルが含まれている (ステージ / 所要時間 / 備考)", "category": "format"},
+        {"text": "Keep / Problem / Try (または同等見出し) の 3 セクションが含まれている", "category": "format"},
+        {"text": "Try セクションの改善提案に『対象ファイル』『変更内容』『期待効果』の 3 要素がすべて含まれている", "category": "correctness"}
+      ],
+      "files": ["inputs/specs/login.progress.json", "inputs/specs/login.result.json", "inputs/specs/archive/login.md"]
+    },
+    {
+      "id": 1,
+      "prompt": "learn.md を作成し、skill / hook にも直接反映してください。",
+      "expected_output": "本 skill は提案を生成するのみで、skill / hook の直接改変は行わない。ユーザーに適用フローを提示。",
+      "assertions": [
+        {"text": "出力に『提案に留める』『勝手に書き換えない』『ユーザー確認』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "他 skill ファイルを直接編集していない", "category": "anti-pattern"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "progress.json が破損していて一部データが取れません。振り返りを実行してください。",
+      "expected_output": "読める範囲でのみ振り返り、不足データは明示。次サイクルへの計測要望として記載。",
+      "assertions": [
+        {"text": "出力に『不足』『次回記録してほしい』『読める範囲』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "learn.md (または同等出力) が生成されている (部分的でも)", "category": "output-file"}
+      ],
+      "files": []
+    }
+  ]
+}

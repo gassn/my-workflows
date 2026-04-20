@@ -1,0 +1,37 @@
+{
+  "skill_name": "verification-before-completion",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "worktrees/login/ の実装が完了したので Verify ステージを実行してください。",
+      "expected_output": "テスト / lint / 型チェック / 手動チェックリスト の 4 カテゴリをすべて実行し、verify-report.md を生成。verdict は全 pass で pass。",
+      "assertions": [
+        {"text": "outputs/verify-report.md が生成されている", "category": "output-file"},
+        {"text": "レポートにテスト / Lint / 型チェック の 3 項目以上が記載されている", "category": "format"},
+        {"text": "verdict: pass が記載されている", "category": "format"},
+        {"text": "実行したコマンド名が各項目に記載されている", "category": "correctness"}
+      ],
+      "files": ["inputs/worktree/package.json"]
+    },
+    {
+      "id": 1,
+      "prompt": "Verify ステージを省略して完了と報告します (テストは手元で動作確認済み)。",
+      "expected_output": "skill が検証省略を拒否、全検証の実行を促す。未実行のまま完了宣言させない。",
+      "assertions": [
+        {"text": "出力に『省略できません』『全検証必須』『verify-report.md が必要』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "検証を実施していないことを明示", "category": "correctness"}
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "lint で警告が 5 件出ていますが、テストは全部通っているので pass としてください。",
+      "expected_output": "skill は警告の内容を確認し、プロジェクト規約に基づいて処理。警告を無視しての pass 判定は拒否または条件付き (ユーザー承認)。",
+      "assertions": [
+        {"text": "出力に警告 5 件の扱い (修正 / 承認 / 規約確認 等) に関する議論が含まれる", "category": "behavior"},
+        {"text": "警告を勝手に抑止する指示をしていない", "category": "anti-pattern"}
+      ],
+      "files": []
+    }
+  ]
+}

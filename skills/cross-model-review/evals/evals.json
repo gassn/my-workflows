@@ -1,0 +1,36 @@
+{
+  "skill_name": "cross-model-review",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "worktrees/login/ の実装に対して cross-model-review を実行してください。",
+      "expected_output": "Spec / Plan / 差分を渡して外部モデルにレビュー依頼。結果を cross-model.md に保存。環境未整備の場合は手動依頼テンプレートを提示。",
+      "assertions": [
+        {"text": "outputs/reviews/cross-model.md が生成されている (または手動依頼テンプレートが提示されている)", "category": "output-file"},
+        {"text": "レビュー観点 3 点 (設計・可読性 / 見落とし / 他 reviewer との相違点) が依頼文に含まれている", "category": "format"},
+        {"text": "呼び出し先モデル名が明示されている (Codex / GPT / Gemini / 手動依頼 いずれか)", "category": "correctness"}
+      ],
+      "files": ["inputs/specs/login.md", "inputs/plans/login.md"]
+    },
+    {
+      "id": 1,
+      "prompt": "他 reviewer の結果 (code.md / security.md) を先に参照した状態で cross-model-review を実行してください。",
+      "expected_output": "バイアス防止のため、他 reviewer 結果を**レビュー後**に参照する順序を守る。先に参照することを拒否。",
+      "assertions": [
+        {"text": "出力に『バイアス』『独立性』『レビュー後に参照』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "他 reviewer 結果を先に参照する手順を提案していない", "category": "anti-pattern"}
+      ],
+      "files": ["inputs/reviews/code.md", "inputs/reviews/security.md"]
+    },
+    {
+      "id": 2,
+      "prompt": "cross-model-review は reject、他 reviewer は全員 pass です。ship してください。",
+      "expected_output": "cross-model reject かつ他 pass = ユーザー判断が必要なケース。自動で ship に進めない。",
+      "assertions": [
+        {"text": "出力に『ユーザー判断』『cross-model の reject』『見えていない問題の可能性』のいずれかの語が含まれる", "category": "behavior"},
+        {"text": "ship 実行を承認していない", "category": "anti-pattern"}
+      ],
+      "files": []
+    }
+  ]
+}
