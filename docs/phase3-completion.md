@@ -140,6 +140,20 @@
 
 **全 11 skill iteration-1 相当のテスト完了**。with_skill assertion pass 率は各 skill で 100%。without_skill 比較は brainstorming / writing-spec のみ実施 (Delta +35〜37.5pt)。
 
+### 5.1.1 Phase 3 agent iteration-1 結果 (2026-04-21)
+
+Phase 3 で実装した 5 agent についても iteration-1 単体動作確認を実施、全 agent pass:
+
+| agent | シナリオ | 結果 |
+|---|---|---|
+| developer | 電卓 add() の TDD 実装 (Python + pytest) | Red→Green→Refactor 完走、5/5 テスト pass、禁止事項 7 項目全クリア |
+| verifier | 仮想ログイン機能の 4 カテゴリ検証 | verify-report.md 完備 (テスト 42/42 / Lint 0 / 型 0 / AC 3/3)、verdict: pass |
+| code-reviewer | 品質問題 + セキュリティ問題混在の login.ts | verdict: needs-fix (Major 3 / Minor 4)、**セキュリティ観点に不侵犯** (責務境界遵守) |
+| security-reviewer | 意図的セキュリティ欠陥 6 件の login.ts | verdict: reject (Critical 3 / Major 3 / Minor 1)、**意図的問題 6/6 検出 (100%)**、OWASP カテゴリ併記 |
+| cross-model-reviewer | Phase 3 制約下での依頼文生成 | 手動依頼テンプレート生成、**バイアス防止順序遵守** (他 reviewer 結果を先に見せない)、verdict: PENDING placeholder |
+
+**5/5 agent pass (100%)**。code-reviewer と security-reviewer が同じ login.ts を見ても責務境界を守って独立判定することを確認 (被り指摘なし)。3 reviewer 体制の独立性が機能することを Phase 5 の並列化前提で確認済み。
+
 ### 5.2 spec-leader 全 5 ケーステスト詳細
 
 **iteration-1 (前提条件チェック系、3 ケース)**:

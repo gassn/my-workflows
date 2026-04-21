@@ -121,15 +121,15 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 
 ### Phase 3 agent (2026-04-21 時点、5/8 完了)
 
-**実装済 (5 agent、spec-leader 配下)**:
+**実装済 (5 agent、spec-leader 配下)** — iteration-1 単体動作確認完了 (5/5 agent pass、2026-04-21):
 
-| # | agent | 役割 | 連携 skill |
-|---|---|---|---|
-| 1 | `developer` | Plan タスク 1 件を TDD (Red→Green→Refactor) で実装 | tdd-driver |
-| 2 | `verifier` | 4 カテゴリ検証 (test / lint / type / 手動 AC) を実行 + verify-report 生成 | verification-before-completion |
-| 3 | `code-reviewer` | コード品質レビュー (可読性 / 設計 / 単純性 / 保守性) | receiving-code-review |
-| 4 | `security-reviewer` | セキュリティレビュー (OWASP Top 10 + 認証認可 + 入力検証) | receiving-code-review |
-| 5 | `cross-model-reviewer` | 外部モデル (Codex / GPT / Gemini) 経由の独立レビュー、Phase 3 は手動依頼運用 | cross-model-review |
+| # | agent | 役割 | 連携 skill | iteration-1 結果 |
+|---|---|---|---|---|
+| 1 | `developer` | Plan タスク 1 件を TDD (Red→Green→Refactor) で実装 | tdd-driver | Python 電卓 add() で Red→Green→Refactor 完走、5/5 テスト pass |
+| 2 | `verifier` | 4 カテゴリ検証 (test / lint / type / 手動 AC) を実行 + verify-report 生成 | verification-before-completion | 仮想 login 機能で 4 カテゴリ verify-report 生成、verdict: pass |
+| 3 | `code-reviewer` | コード品質レビュー (可読性 / 設計 / 単純性 / 保守性) | receiving-code-review | 品質問題含む login.ts で Major 3 / Minor 4 検出、セキュリティ観点不侵犯 |
+| 4 | `security-reviewer` | セキュリティレビュー (OWASP Top 10 + 認証認可 + 入力検証) | receiving-code-review | 意図的脆弱性 6/6 検出 (100%)、Critical 3 / Major 3 / Minor 1、verdict: reject |
+| 5 | `cross-model-reviewer` | 外部モデル (Codex / GPT / Gemini) 経由の独立レビュー、Phase 3 は手動依頼運用 | cross-model-review | 手動依頼テンプレート生成、バイアス防止順序遵守、verdict: PENDING placeholder |
 
 **未実装 (3 agent)**:
 

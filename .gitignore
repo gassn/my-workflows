@@ -3,3 +3,6 @@ claude-settings.json
 
 # skill-creator の eval 実行結果ワークスペース (再生成可能のため git 管理対象外)
 skills/*-workspace/
+
+# agent の eval 実行結果ワークスペース (再生成可能のため git 管理対象外)
+agents-workspace/
