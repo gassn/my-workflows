@@ -1,0 +1,12 @@
+{
+  "spec": "login",
+  "verdict": "shipped",
+  "started_at": "2026-04-20T22:00:00Z",
+  "ended_at": "2026-04-21T03:45:00Z",
+  "final_commit": "abc123def456",
+  "stages_completed": ["isolate", "plan", "implement", "verify", "code_review", "ship"],
+  "stages_failed": [],
+  "stages_blocked": [],
+  "user_action_required": null,
+  "notes": "全ステージ正常完了、main にマージ済。Code Review で 1 回 needs-fix → 再 Implement → pass の loop 発生"
+}

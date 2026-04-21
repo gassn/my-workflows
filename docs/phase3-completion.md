@@ -115,21 +115,23 @@ Phase 5 で追加する orchestrator との接続インタフェース (spec-lea
 
 ## 5. テスト結果
 
-### 5.1 eval 実施状況
+### 5.1 eval 実施状況 (2026-04-21 全 skill iteration-1 完了)
 
 | Skill | eval 状態 | 主要結果 |
 |---|---|---|
 | brainstorming | iteration-2 完了 | with_skill 100% / without_skill 65% / Delta +35pt |
 | spec-dag-builder | iteration-1 完了 | 5 ケース全通過 (100%) |
 | writing-spec | iteration-1 完了 | with_skill 100% (18/18) / without_skill 62.5% (10/16) / Delta +37.5pt |
-| spec-review | 未実施 | — |
-| spec-leader | **限定テスト完了** | 前提条件チェック 3 ケース pass (100%)、Isolate 実動作 / 再開モードは未実施 |
-| writing-plan | 未実施 | — |
-| tdd-driver | 未実施 | — |
-| verification-before-completion | 未実施 | — |
-| receiving-code-review | 未実施 | — |
-| cross-model-review | 未実施 | — |
-| learn | 未実施 | — |
+| spec-review | iteration-1 完了 | pass / reject / needs-fix 主要 3 ケース 18/18 pass (100%) |
+| spec-leader | 限定テスト完了 | 前提条件チェック 3 ケース pass (100%)、Isolate 実動作 / 再開モードは git 事前準備要で未実施 |
+| writing-plan | iteration-1 完了 | basic / existing / not-worktree 9/9 pass (100%) |
+| tdd-driver | iteration-1 完了 | basic (TDD サイクル案内) / antipattern (テストなし編集拒否) 2/2 pass (100%) |
+| verification-before-completion | iteration-1 完了 | basic (4 カテゴリ検証 + verify-report 生成) / antipattern (省略拒否) 2/2 pass (100%) |
+| receiving-code-review | iteration-1 完了 | basic (3 reviewer 集約 + Plan 追加) / antipattern (循環防止) 2/2 pass (100%) |
+| cross-model-review | iteration-1 完了 | basic (依頼文 + placeholder) / antipattern (バイアス防止) 2/2 pass (100%) |
+| learn | iteration-1 完了 | basic (learn.md + 6 件 Try 提案) / antipattern (skill/hook 直接改変拒否) 2/2 pass (100%) |
+
+**全 11 skill iteration-1 相当のテスト完了**。with_skill assertion pass 率は各 skill で 100%。without_skill 比較は brainstorming / writing-spec のみ実施 (Delta +35〜37.5pt)。
 
 ### 5.2 spec-leader 限定テスト詳細
 

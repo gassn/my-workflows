@@ -94,11 +94,11 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 | 4 | `spec-review` | Spec 自動レビュー (完全性 / 実現可能性 / 整合性の 3 観点、main agent 順次実行 → Phase 5 で agent 3 並列化)、writing-spec 自動再起動 | iteration-1 主要 3 ケース完了 (pass / reject / needs-fix すべて 100% 期待通り判定、18/18 pass) |
 | 5 | `spec-leader` | Isolate → ship の 6 ステージ遷移制御。Phase 5 orchestrator 連携インタフェース確定済 | 限定テスト準備済 (未実施) |
 | 6 | `writing-plan` | Plan ステージ: spec.md → plans/<spec-name>.md、技術設計 + タスク分解 (チェックボックス形式) | iteration-1 主要 3 ケース完了 (basic / existing / not-worktree すべて 100%、9/9 pass) |
-| 7 | `tdd-driver` | Implement ステージ: TDD 強制 (Red → Green → Refactor)、Phase 4 で PreToolUse hook 化予定 | 未実施 |
-| 8 | `verification-before-completion` | Verify ステージ: 完了宣言前の全検証 (test / lint / type / 手動 AC) 強制、Phase 4 で Stop hook 化予定 | 未実施 |
-| 9 | `receiving-code-review` | Code Review 差戻し対応: reviewer 指摘の集約 + Plan タスク追加 + 修正 loop (最大 3 回) | 未実施 |
-| 10 | `cross-model-review` | Codex / GPT / Gemini 等の独立モデルレビュー、Phase 3 は手動依頼テンプレート | 未実施 |
-| 11 | `learn` | ship 後の振り返り: 時間配分 / 手戻り / Keep / Problem / Try パッチ案生成 | 未実施 |
+| 7 | `tdd-driver` | Implement ステージ: TDD 強制 (Red → Green → Refactor)、Phase 4 で PreToolUse hook 化予定 | iteration-1 完了 (basic / antipattern 2/2 pass) |
+| 8 | `verification-before-completion` | Verify ステージ: 完了宣言前の全検証 (test / lint / type / 手動 AC) 強制、Phase 4 で Stop hook 化予定 | iteration-1 完了 (basic / antipattern 2/2 pass) |
+| 9 | `receiving-code-review` | Code Review 差戻し対応: reviewer 指摘の集約 + Plan タスク追加 + 修正 loop (最大 3 回) | iteration-1 完了 (basic / antipattern 2/2 pass) |
+| 10 | `cross-model-review` | Codex / GPT / Gemini 等の独立モデルレビュー、Phase 3 は手動依頼テンプレート | iteration-1 完了 (basic / antipattern 2/2 pass) |
+| 11 | `learn` | ship 後の振り返り: 時間配分 / 手戻り / Keep / Problem / Try パッチ案生成 | iteration-1 完了 (basic / antipattern 2/2 pass) |
 
 **設計方針の一貫性**:
 
