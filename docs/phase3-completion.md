@@ -122,7 +122,7 @@ Phase 5 で追加する orchestrator との接続インタフェース (spec-lea
 | brainstorming | iteration-2 完了 | with_skill 100% / without_skill 65% / Delta +35pt |
 | spec-dag-builder | iteration-1 完了 | 5 ケース全通過 (100%) |
 | writing-spec | iteration-1 完了 | with_skill 100% (18/18) / without_skill 62.5% (10/16) / Delta +37.5pt |
-| spec-review | iteration-1 完了 | pass / reject / needs-fix 主要 3 ケース 18/18 pass (100%) |
+| spec-review | iteration-1 + iteration-2 完了 | 全 5 ケース pass (100%)。3 verdict 各 2 回 + 整合性コードベース走査 (7/7 検出) + 再レビューサイクル (Major 3 件解消確認) |
 | spec-leader | iteration-1 + iteration-2 完了 | 全 5 ケース pass (100%)。iteration-1: 前提条件 3 ケース、iteration-2: Isolate 実 git worktree 動作 + developer agent blocked 検出 + 再開モードの 2 ケース |
 | writing-plan | iteration-1 完了 | basic / existing / not-worktree 9/9 pass (100%) |
 | tdd-driver | iteration-1 完了 | basic (TDD サイクル案内) / antipattern (テストなし編集拒否) 2/2 pass (100%) |
