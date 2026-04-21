@@ -92,7 +92,7 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 | 2 | `spec-dag-builder` | 複数 Spec の依存関係解析、DAG 構築 (段階的アップデート、循環検出) | iteration-1 完了 (5/5 通過) |
 | 3 | `writing-spec` | Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理、§13 レビュー指摘対応モード | iteration-1 完了 (with 100% / without 62.5% / Delta +37.5pt) |
 | 4 | `spec-review` | Spec 自動レビュー (完全性 / 実現可能性 / 整合性の 3 観点、main agent 順次実行 → Phase 5 で agent 3 並列化)、writing-spec 自動再起動 | iteration-1 主要 3 ケース完了 (pass / reject / needs-fix すべて 100% 期待通り判定、18/18 pass) |
-| 5 | `spec-leader` | Isolate → ship の 6 ステージ遷移制御。Phase 5 orchestrator 連携インタフェース確定済 | 限定テスト準備済 (未実施) |
+| 5 | `spec-leader` | Isolate → ship の 6 ステージ遷移制御。Phase 5 orchestrator 連携インタフェース確定済 | iteration-1 (3 ケース) + iteration-2 (2 ケース) 完了、全 5/5 pass (100%)。git worktree 実動作 / 再開モード / 前提条件違反 の全系統確認済 |
 | 6 | `writing-plan` | Plan ステージ: spec.md → plans/<spec-name>.md、技術設計 + タスク分解 (チェックボックス形式) | iteration-1 主要 3 ケース完了 (basic / existing / not-worktree すべて 100%、9/9 pass) |
 | 7 | `tdd-driver` | Implement ステージ: TDD 強制 (Red → Green → Refactor)、Phase 4 で PreToolUse hook 化予定 | iteration-1 完了 (basic / antipattern 2/2 pass) |
 | 8 | `verification-before-completion` | Verify ステージ: 完了宣言前の全検証 (test / lint / type / 手動 AC) 強制、Phase 4 で Stop hook 化予定 | iteration-1 完了 (basic / antipattern 2/2 pass) |

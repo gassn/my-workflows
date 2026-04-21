@@ -123,7 +123,7 @@ Phase 5 で追加する orchestrator との接続インタフェース (spec-lea
 | spec-dag-builder | iteration-1 完了 | 5 ケース全通過 (100%) |
 | writing-spec | iteration-1 完了 | with_skill 100% (18/18) / without_skill 62.5% (10/16) / Delta +37.5pt |
 | spec-review | iteration-1 完了 | pass / reject / needs-fix 主要 3 ケース 18/18 pass (100%) |
-| spec-leader | 限定テスト完了 | 前提条件チェック 3 ケース pass (100%)、Isolate 実動作 / 再開モードは git 事前準備要で未実施 |
+| spec-leader | iteration-1 + iteration-2 完了 | 全 5 ケース pass (100%)。iteration-1: 前提条件 3 ケース、iteration-2: Isolate 実 git worktree 動作 + developer agent blocked 検出 + 再開モードの 2 ケース |
 | writing-plan | iteration-1 完了 | basic / existing / not-worktree 9/9 pass (100%) |
 | tdd-driver | iteration-1 完了 | basic (TDD サイクル案内) / antipattern (テストなし編集拒否) 2/2 pass (100%) |
 | verification-before-completion | iteration-1 完了 | basic (4 カテゴリ検証 + verify-report 生成) / antipattern (省略拒否) 2/2 pass (100%) |
@@ -133,18 +133,20 @@ Phase 5 で追加する orchestrator との接続インタフェース (spec-lea
 
 **全 11 skill iteration-1 相当のテスト完了**。with_skill assertion pass 率は各 skill で 100%。without_skill 比較は brainstorming / writing-spec のみ実施 (Delta +35〜37.5pt)。
 
-### 5.2 spec-leader 限定テスト詳細
+### 5.2 spec-leader 全 5 ケーステスト詳細
 
-**実施ケース (3/5)**:
+**iteration-1 (前提条件チェック系、3 ケース)**:
 
 1. **eval 0 (no-spec)**: Spec ファイル未存在時にエラー返却 + worktree / progress 未生成 → **pass**
 2. **eval 2 (no-review)**: review.md 未存在時に spec-review への誘導 + worktree / progress 未生成 → **pass**
 3. **eval 3 (verdict-needsfix)**: verdict が pass でない時に writing-spec レビュー指摘対応モードへの誘導 + worktree / progress 未生成 → **pass**
 
-**未実施ケース (2/5)**:
+**iteration-2 (git 実動作系、2 ケース)**:
 
-1. **eval 1 (isolate-then-blocked)**: git worktree 実動作 + writing-plan 未実装検出による blocked 状態検証 — 実行には workspace 内の `git init` + 初期コミットが必要
-2. **eval 4 (resume)**: 再開モードの検証 — 事前 worktree / progress 構築が必要
+4. **eval 1 (isolate-then-blocked)**: Agent が workspace 内で実 `git init` + 初期 commit を実行、skill が `git worktree add worktrees/login -b spec/login` で worktree 作成、spec.md コピー、progress.json / progress.md 生成を完遂。Plan ステージは writing-plan 模擬起動で completed 扱い、**Implement ステージで developer agent 未実装を検出して blocked**、result.json を verdict: paused で生成 → **pass**。SKILL.md §16.3 で想定された「Isolate → Plan 完了 → Implement で blocked」動作が正確に再現
+5. **eval 4 (resume)**: 既存 progress.json + worktrees/ の状態で skill を起動、§14.1 判定 2 条件で再開モードを認識、progress.json から current_stage=plan / blocked 状態を読取、ユーザーに 3 択 (Plan 再実行 / 手動完了扱いで Implement から / 中止) を提示、progress.json / progress.md を一切変更せず、新 worktree も未作成、result.json も未生成 (ユーザー確認前は状態不変) → **pass**
+
+**合計 5/5 pass (100%)**
 
 ### 5.3 動作確認で得られた改善提案
 

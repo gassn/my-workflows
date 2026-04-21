@@ -446,18 +446,18 @@ Phase 3 時点では下位 skill / agent の多くが未実装です。本 skill
 - 全停止 + ユーザー報告
 - `result.json` の `verdict` を `paused` に
 
-### 16.3 実装状況の表 (2026-04 時点)
+### 16.3 実装状況の表 (2026-04-21 時点)
 
-| ステージ | 必要 skill / agent | 実装状況 |
-|---|---|---|
-| Isolate | (なし、本 skill で直接 git worktree 実行) | ○ |
-| Plan | `writing-plan` skill + `investigator` agent | × 未実装 |
-| Implement | `tdd-driver` skill + `developer` agent | × 未実装 |
-| Verify | `verification-before-completion` skill + `verifier` agent | × 未実装 |
-| Code Review | `receiving-code-review` / `cross-model-review` skill + 3 reviewer agent | × 未実装 |
-| ship | (なし、本 skill で直接 git merge 実行) | ○ |
+| ステージ | 必要 skill | 必要 agent | 実装状況 |
+|---|---|---|---|
+| Isolate | (本 skill で直接 git worktree 実行) | — | ○ |
+| Plan | `writing-plan` ○ | `investigator` × 未実装 | skill 通過可、agent 未実装だが Plan は skill 単独で完了可能 |
+| Implement | `tdd-driver` ○ | `developer` × 未実装 | **Implement で blocked** (developer agent 不在) |
+| Verify | `verification-before-completion` ○ | `verifier` × 未実装 | (Implement で blocked のため未到達) |
+| Code Review | `receiving-code-review` ○ / `cross-model-review` ○ | 3 reviewer agent × 未実装 | (未到達) |
+| ship | (本 skill で直接 git merge 実行) | — | ○ |
 
-つまり Phase 3 初期では **Isolate で作動 → Plan で blocked** が標準的な流れになります。writing-plan 実装と同時に Plan ステージが通るようになり、順次下位 skill 実装で完走範囲が広がります。
+Phase 3 の 11 skill が全て実装完了した現時点では、**Isolate → Plan 完了 → Implement で developer agent 未実装を検出して blocked** が標準的な流れとなります。Phase 3 の agent 実装 (developer / verifier / 3 reviewer) が進むと、順次下位ステージが通るようになり Code Review → ship まで完走可能になります。
 
 ## 17. Phase 5 改修不要性の保証
 
