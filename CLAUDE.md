@@ -25,6 +25,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │   ├── workflow.md                    # 開発ワークフロー定義 (9 ステージ + 3 層階層)
 │   └── glossary.md                    # 用語集 (Project Phase / Workflow Stage / Release Phase / Spec)
 ├── hooks/                             # 既存スクリプト (SessionStart 等、Phase 4 で本格統合予定)
+├── agents/                            # subagent 定義 (Phase 3 で 5 種実装、残 3 種は Phase 5)
+│   └── <agent-name>.md                # 単一 Markdown ファイル (frontmatter + プロンプト)
 └── skills/
     ├── <skill-name>/
     │   ├── SKILL.md                   # skill 本体 (frontmatter + 本文)
@@ -44,6 +46,16 @@ ln -sfn ~/my-workflows/skills/<skill-name> ~/.claude/skills/<skill-name>
 ```
 
 `-workspace` ディレクトリは skill-creator の iteration 出力で、skill 本体ではないためリンク対象外です。
+
+## agent の配置と有効化
+
+agent も同様にリポジトリ内で開発し、`~/.claude/agents/` へシンボリックリンクで公開します:
+
+```bash
+ln -sfn ~/my-workflows/agents/<agent-name>.md ~/.claude/agents/<agent-name>.md
+```
+
+各 agent は単一 Markdown ファイルで、frontmatter (`name` / `description`) と本文 (プロンプト定義) を持ちます。Phase 3 では spec-leader 配下の 5 種 (developer / verifier / code-reviewer / security-reviewer / cross-model-reviewer) を実装しました。残 3 種 (investigator / spec-reviewer / orchestrator) は Phase 5 で対応します。
 
 ## skill 作成時の構造
 
@@ -106,6 +118,24 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 - specLeader は Phase 5 orchestrator 連携インタフェース (入力 spec_path / 出力 progress.json + result.json) を確定済、Phase 5 で skill 改修不要
 - Phase 4 hook 化対応: tdd-driver / verification-before-completion の強制部分は hook 化予定だが skill インタフェースは変更なし
 - 下位 skill 未実装時の扱い: spec-leader §16 で blocked 状態を記録、全停止 + ユーザー相談 (Q3 確定)
+
+### Phase 3 agent (2026-04-21 時点、5/8 完了)
+
+**実装済 (5 agent、spec-leader 配下)**:
+
+| # | agent | 役割 | 連携 skill |
+|---|---|---|---|
+| 1 | `developer` | Plan タスク 1 件を TDD (Red→Green→Refactor) で実装 | tdd-driver |
+| 2 | `verifier` | 4 カテゴリ検証 (test / lint / type / 手動 AC) を実行 + verify-report 生成 | verification-before-completion |
+| 3 | `code-reviewer` | コード品質レビュー (可読性 / 設計 / 単純性 / 保守性) | receiving-code-review |
+| 4 | `security-reviewer` | セキュリティレビュー (OWASP Top 10 + 認証認可 + 入力検証) | receiving-code-review |
+| 5 | `cross-model-reviewer` | 外部モデル (Codex / GPT / Gemini) 経由の独立レビュー、Phase 3 は手動依頼運用 | cross-model-review |
+
+**未実装 (3 agent)**:
+
+- `investigator` — コードベース / 依存 / 類似実装調査 (Plan ステージ用、Phase 5 で Brainstorming にも拡張)
+- `spec-reviewer` — Spec の 3 観点レビュー agent 並列化 (spec-review skill の Phase 5 版)
+- `orchestrator` — 複数 Spec の DAG 管理、specLeader 起動、merge 順序制御 (Phase 5 で実装)
 
 **設計方針**: specLeader は Phase 5 の orchestrator から呼ばれる前提のインタフェース (入力: spec ファイルパス、出力: 進捗ファイル + 結果ファイルパス) を Phase 3 時点で確定し、Phase 5 で改修不要にします。
 
