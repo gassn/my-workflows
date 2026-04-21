@@ -1,14 +1,21 @@
 # Phase 3 ワークフロー skill 実装完了レポート
 
-- **完了日**: 2026-04-20
+- **skill 実装完了日**: 2026-04-20
+- **eval iteration-1 相当完了日**: 2026-04-21 (主要 skill は iteration-2 まで実施)
 - **対象**: `ROADMAP.md` Phase 3 の 11 skill + 設計制約 3 項目
-- **補足**: agent (8 種) の実装は Phase 5 で対応予定のため本 Phase の対象外
+- **補足**: agent (8 種) の実装は Phase 3 の残タスクとして継続、orchestrator (1 種) は Phase 5 対応
 
 ## 1. サマリ
 
-本プロジェクトの中核ワークフロー (`docs/workflow.md`) で定義した 9 ステージ (Brainstorming → DAG 構築 → Spec → Spec Review → Isolate → Plan → Implement → Verify → Code Review → ship → Learn) を担う **11 skill** を実装完了しました。各 skill は対応するワークフローステージを担当し、自動起動連携で Brainstorming から Learn まで一気通貫で進行できる体制を整えました。
+本プロジェクトの中核ワークフロー (`docs/workflow.md`) で定義した 9 ステージ (Brainstorming → DAG 構築 → Spec → Spec Review → Isolate → Plan → Implement → Verify → Code Review → ship → Learn) を担う **11 skill** を実装完了し、全 skill について **eval iteration-1 相当以上のテストを実施して with_skill 100% pass** を達成しました。
 
-Phase 5 で追加する orchestrator との接続インタフェース (spec-leader の入力 spec_path / 出力 progress.json + result.json) も Phase 3 時点で確定させており、Phase 5 で spec-leader 本体の改修は不要です。
+達成事項:
+
+- 11/11 skill 実装完了、自動起動チェーンで Brainstorming から Learn まで一気通貫進行
+- 25 eval ケース実施、with_skill 全ケース期待挙動通り (pass 率 100%)
+- spec-review / spec-leader は iteration-2 まで実施 (整合性観点 + 再レビューサイクル + git 実動作 + 再開モードを含む全機能確認)
+- without_skill 比較は brainstorming (Δ+35pt) / writing-spec (Δ+37.5pt) で実施、skill 独自価値を定量確認
+- Phase 5 orchestrator 連携インタフェース (spec-leader の入力 spec_path / 出力 progress.json + result.json) を確定、Phase 5 で spec-leader 本体の改修不要
 
 ## 2. 実装 skill 一覧
 
@@ -148,38 +155,56 @@ Phase 5 で追加する orchestrator との接続インタフェース (spec-lea
 
 **合計 5/5 pass (100%)**
 
-### 5.3 動作確認で得られた改善提案
+### 5.3 動作確認で得られた改善提案 (iteration 横断)
 
-**spec-leader SKILL.md §3 の early-return 時に result.json を生成する案**:
+eval 実行中に Agent / 動作結果から抽出した skill / SKILL.md への改善提案です。次 iteration 以降で順次反映を検討します。
 
-- 提案元: eval 2 の Agent フィードバック
-- 内容: 前提条件違反で停止した場合も `specs/<spec-name>.result.json` を `verdict: precondition-failed` で生成
-- 効果: Phase 5 orchestrator が「なぜ処理されなかったか」を機械可読で取得可能
-- 適用: 次 iteration で SKILL.md §3 / §7 に反映候補
+1. **spec-leader §3 early-return 時に result.json を生成する案** (提案元: spec-review iteration-1 eval 2 Agent)
+   - 内容: 前提条件違反で停止した場合も `specs/<spec-name>.result.json` を `verdict: precondition-failed` で生成
+   - 効果: Phase 5 orchestrator が「なぜ処理されなかったか」を機械可読で取得可能
+   - 適用先: `skills/spec-leader/SKILL.md` §3 分岐表 + §7 結果ファイル仕様 (`precondition-failed` verdict を追加)
+
+2. **spec-leader §14 再開モードで「中止」選択時の result.json 仕様** (提案元: spec-leader iteration-2 eval 4 benchmark)
+   - 内容: ユーザーが再開モードで中止を選んだ場合、`verdict: aborted-on-resume` で result.json を生成
+   - 効果: 再開モード終了後の状態を機械可読で残せる
+   - 適用先: `skills/spec-leader/SKILL.md` §14.3
+
+3. **spec-leader Isolate 実動作テストを CI 可能にする fixture テンプレート** (提案元: spec-leader iteration-2 benchmark)
+   - 内容: `evals/fixtures/git-repo-template/` に `git init + 初期 commit` 済みのテスト用 fixture を配置、Agent の事前 `git init` 手順を省略可能に
+   - 効果: CI / 再実行時の再現性向上
+   - 適用先: `skills/spec-leader/evals/fixtures/` 新設 (将来の Phase 4/5 CI 対応時)
+
+4. **learn skill の入力データ整合性チェック強化** (提案元: learn eval 0 Agent による副次的発見)
+   - 内容: progress.json の blocked 状態と result.json の verdict: shipped の矛盾をエラー/警告として扱う
+   - 効果: 上流 skill (spec-leader) のデータ生成バグ検出が可能に
+   - 適用先: `skills/learn/SKILL.md` §8 失敗時の対応
+
+5. **receiving-code-review の Plan 更新書式の明文化** (提案元: receiving-code-review eval 0)
+   - 内容: 追加タスクの frontmatter 更新ルール (`status: plan-revised` / `revised` / `review_iteration`) を SKILL.md §3.2 に明記
+   - 効果: iteration トレーサビリティが skill 横断で担保される
+   - 適用先: `skills/receiving-code-review/SKILL.md` §3.2
 
 ## 6. 既知の未対応事項
 
-### 6.1 eval 未実施 skill (7 種)
+### 6.1 eval 未対応項目 (skill 単位ではすべて iteration-1 相当完了)
 
-spec-review / writing-plan / tdd-driver / verification-before-completion / receiving-code-review / cross-model-review / learn は eval iteration-1 未実施です。次サイクルで順次実施予定:
+全 11 skill の iteration-1 相当テストは完了していますが、以下は次 iteration 以降に持ち越しています:
 
-- 優先度高: **spec-review** (writing-spec の後続として接続確認に必要)
-- 優先度中: **writing-plan** / **tdd-driver** / **verification-before-completion** (spec-leader が依存)
-- 優先度中: **receiving-code-review** (Code Review loop の健全性に関わる)
-- 優先度低: **cross-model-review** / **learn** (外部依存 or 振り返りフェーズ)
+- **without_skill 比較未実施** (skill 9 種): brainstorming / writing-spec のみ Delta 測定済 (+35pt / +37.5pt)。spec-dag-builder / spec-review / spec-leader / writing-plan / tdd-driver / verification-before-completion / receiving-code-review / cross-model-review / learn は with_skill のみで採点。skill 独自価値の定量化は今後の課題
+- **eval iteration 深化**: 主要 skill (spec-review / spec-leader) は iteration-2 まで実施済、他 skill は iteration-1 の代表ケース (2-3 件) のみ。エッジケース / 組み合わせテストは未カバー
 
-### 6.2 spec-leader 下位 skill の未実装依存
+### 6.2 Phase 3 の agent 実装が完走の鍵
 
-Phase 3 初期は以下の状態で動作します (`spec-leader` §16 の通り):
+Phase 3 の ROADMAP では skill (11 種) と agent (8 種) が対象で、agent は未実装のままです。現時点の spec-leader 実行フローでは以下で停止します (`spec-leader` §16.3 の通り):
 
 - Isolate ステージ: ○ (本 skill で直接 git worktree 実行)
-- Plan ステージ: ○ (writing-plan 実装済、Phase 3 で実装完了)
-- Implement ステージ: × (developer agent 未実装、tdd-driver は skill のみで agent は Phase 3 の対象外)
-- Verify ステージ: × (verifier agent 未実装)
-- Code Review ステージ: × (code-reviewer / security-reviewer / cross-model-reviewer agent 未実装)
+- Plan ステージ: ○ (writing-plan 実装済)
+- **Implement ステージ: × developer agent 未実装で blocked**
+- Verify ステージ: × (verifier agent 未実装、未到達)
+- Code Review ステージ: × (code-reviewer / security-reviewer / cross-model-reviewer agent 未実装、未到達)
 - ship ステージ: ○ (本 skill で直接 git merge 実行、ユーザー承認後)
 
-つまり本レポート時点では「Isolate → Plan 完了 → Implement で blocked」が自動進行の最大範囲です。Implement 以降を完走するには Phase 3 の agent 実装 (ROADMAP Phase 3 の agent 項目) が必要です。
+本レポート時点で自動進行の最大範囲は「Isolate → Plan 完了 → Implement で blocked」。完走には **Phase 3 agent 群 (developer / verifier / code-reviewer / security-reviewer / cross-model-reviewer、5 種)** の実装が必要です。残 agent (investigator / spec-reviewer) と orchestrator は Phase 5 対応。
 
 ### 6.3 Phase 4 hook 化の依存
 
@@ -187,30 +212,61 @@ Phase 3 初期は以下の状態で動作します (`spec-leader` §16 の通り
 
 - `tdd-driver` → PreToolUse hook (Edit / Write 時のテスト存在確認)
 - `verification-before-completion` → Stop hook (完了宣言前の全検証強制)
+- `spec-leader` → TaskCompleted hook / WorktreeCreate hook / WorktreeRemove hook
+- (全 skill 横断) → SessionStart hook (プロジェクト固有 skill / コンテキストの自動注入)
 
-skill 側のインタフェースは変更不要、hook 追加時に強制力が上がる設計です。
+skill 側のインタフェースは変更不要、hook 追加時に強制力が上がる設計です。Phase 3 の skill で「指導 / 提案」として機能している部分が Phase 4 で「物理的ブロック」に昇格します。
 
 ## 7. Phase 4 / 5 への引き継ぎ
 
-### 7.1 Phase 4 (hook 自動化)
+### 7.1 Phase 3 残タスク (agent 実装) — 本 Phase 継続分
 
-- PreToolUse hook: tdd-driver §5 のロジックを hook 化
-- Stop hook: verification-before-completion §5 のロジックを hook 化
-- SessionStart hook: プロジェクト固有 skill / コンテキストの自動注入 (superpowers 方式)
-- 各 skill の SKILL.md は変更不要 (hook は skill の成果物を参照するのみ)
+Phase 3 ROADMAP の agent 8 種のうち、以下 5 種が spec-leader の Implement〜Code Review 完走に必須:
 
-### 7.2 Phase 5 (orchestrator)
+- `developer`: タスク単位の TDD 実装 (tdd-driver と連携)
+- `verifier`: 全検証 (test / lint / type) 並列実行 (verification-before-completion と連携)
+- `code-reviewer`: コード品質レビュー
+- `security-reviewer`: セキュリティ観点レビュー
+- `cross-model-reviewer`: 外部モデル経由の独立レビュー (cross-model-review と連携)
 
-- spec-leader の入出力契約 (入力: spec_path / 出力: progress.json + result.json) が確定済
-- orchestrator は以下のように本 skill を呼び出す想定 (本 skill は変更不要):
-  - progress_path を監視
+残 agent:
+
+- `investigator`: コードベース調査 (writing-plan と連携、Phase 5 で brainstorming にも拡張)
+- `spec-reviewer`: Spec の 3 観点レビュー (spec-review と連携、Phase 5 で agent 3 並列化)
+- `orchestrator`: 複数 Spec の DAG 管理 (Phase 5 専任)
+
+### 7.2 Phase 4 (hook 自動化)
+
+- **PreToolUse hook (Edit/Write)**: tdd-driver §5 のロジックを hook 化、実装ファイル編集前のテスト存在確認を物理ブロック
+- **Stop hook**: verification-before-completion §5 のロジックを hook 化、verify-report.md 存在 + verdict: pass を完了宣言前に強制
+- **PostToolUse hook (Edit/Write)**: テストファイル変更時の自動テスト実行
+- **WorktreeCreate hook**: worktree 初期化 (Spec ファイルコピー、ブランチ確認) — spec-leader §8.1 を hook 化
+- **WorktreeRemove hook**: worktree 削除前の未コミット警告
+- **TaskCompleted hook**: タスク完了時の progress 自動更新
+- **SessionStart hook**: プロジェクト固有 skill / コンテキストの自動注入 (superpowers 方式)
+
+各 skill の SKILL.md は変更不要 (hook は skill の成果物を参照するのみ)。
+
+### 7.3 Phase 5 (orchestrator)
+
+- spec-leader の入出力契約 (入力: spec_path / 出力: progress.json + result.json) が確定済、改修不要
+- orchestrator は以下のように本 skill を呼び出す想定:
+  - progress_path を監視 (poll or watch)
   - result_path の verdict (shipped / aborted / paused) で次 Spec へ進む
-- Agent Teams の多階層 subagent 動作確認が Phase 5 の必須検証項目
-- 動作不可の場合、state ファイル経由の擬似並列方式に切替
+- **Agent Teams の多階層 subagent 動作確認** が Phase 5 の必須検証項目
+  - 動作不可の場合、state ファイル経由の擬似並列方式に切替
+- spec-review iteration-2 で整合性コードベース走査の実用性を確認済 → Phase 5 の agent 3 並列化で各観点担当 agent に分割可能
+- merge 順序制御 (複数 Spec 完了時の依存順 + コンフリクト解決) は Phase 5 で設計
 
-## 8. コミット履歴 (Phase 3 時点)
+## 8. コミット履歴 (Phase 3 skill 関連、新しい順)
 
 ```
+0ed8bc8 spec-review eval 3/4 を iteration-2 で実施、全 5 ケース pass
+c1874ca spec-leader eval 1/4 を iteration-2 で実施、全 5 ケース pass
+7b51b87 残 5 skill の eval iteration-1 を一括実施
+0a4e0fe writing-plan eval iteration-1 を実施
+bd42ba6 spec-review eval iteration-1 を実施
+af9a080 Phase 3 ワークフロー skill 実装完了レポートを追加
 89aeccb Phase 3 ワークフロー skill 残 6 種と spec-leader fixture を追加
 1ecad77 spec-leader skill を追加
 71ee2a0 spec-review skill を追加し writing-spec と自動連携
@@ -222,10 +278,24 @@ af74607 brainstorming skill v2 完成と用語整理
 70b09e5 hooks/ ディレクトリの既存スクリプトを追加
 ```
 
-## 9. 次アクション候補
+## 9. 次アクション候補 (優先度順)
 
-1. **未実施 7 skill の eval iteration-1** (優先度高)
-2. **spec-leader eval 1 / 4 の git 実動作テスト** (git init 付き fixture 整備)
-3. **Phase 4 hook 化** (tdd-driver / verification-before-completion)
-4. **Phase 3 の agent 実装** (developer / verifier / reviewer 群 — spec-leader の Implement〜Code Review 完走に必須)
-5. **SKILL.md §3 early-return 時の result.json 生成** (spec-leader 改善提案)
+1. **Phase 3 agent 5 種の実装** (最優先): developer / verifier / code-reviewer / security-reviewer / cross-model-reviewer。spec-leader の Implement〜Code Review を完走可能にする鍵
+2. **Phase 4 hook 自動化着手**: PreToolUse / Stop / WorktreeCreate 等、物理強制力の付与
+3. **§5.3 改善提案 5 件の適用**: spec-leader early-return result.json 生成 / 中止時 verdict 追加 / git fixture テンプレート化 / learn データ整合性 / receiving-code-review frontmatter 明文化
+4. **without_skill Delta 計測** (skill 9 種): skill 独自価値の定量確認、SKILL.md 改修の判断材料
+5. **ドッグフーディング**: 本リポジトリ自身の改修を題材にワークフロー完走を試行 (Phase 6 の統合改善ループへの布石)
+
+## 10. 本 Phase の総括
+
+Phase 3 で目指した「Brainstorming → Learn の 9 ステージを単一 Spec 前提で動作可能な形に実装する」という目標に対し、以下を達成:
+
+- ✅ 11 skill 実装完了 (自動起動チェーンで連携)
+- ✅ 全 skill with_skill 100% pass (25 eval ケース)
+- ✅ 主要 skill は iteration-2 で深化 (整合性観点 + 再レビュー + git 実動作 + 再開モード)
+- ✅ Phase 5 改修不要インタフェースを spec-leader で確定
+- ✅ 下位 skill 未実装時の blocked 判定を明文化 (§16.3)
+- ✅ without_skill Delta を主要 2 skill で確認 (brainstorming +35pt / writing-spec +37.5pt)
+- ⏳ Phase 3 agent 群 (developer / verifier / reviewer 群) は未実装、次タスクに持ち越し
+
+spec-leader の「Phase 5 改修不要」という設計制約を Phase 3 時点で確定させた点は特に重要で、agent 完走と Phase 5 orchestrator 追加の両方で spec-leader の改修を要さない体制を整えました。skill の自動起動チェーンも意図通り機能し、ワークフロー全体の見通しが確立しています。
