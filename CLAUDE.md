@@ -91,7 +91,7 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 | 1 | `brainstorming` | Spec 前の必須ヒアリング起点。Spec 分割提案 + コードベース精査 | iteration-2 完了 (with 100% / without 65% / Delta +35pt) |
 | 2 | `spec-dag-builder` | 複数 Spec の依存関係解析、DAG 構築 (段階的アップデート、循環検出) | iteration-1 完了 (5/5 通過) |
 | 3 | `writing-spec` | Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理、§13 レビュー指摘対応モード | iteration-1 完了 (with 100% / without 62.5% / Delta +37.5pt) |
-| 4 | `spec-review` | Spec 自動レビュー (完全性 / 実現可能性 / 整合性の 3 観点、main agent 順次実行 → Phase 5 で agent 3 並列化)、writing-spec 自動再起動 | 未実施 |
+| 4 | `spec-review` | Spec 自動レビュー (完全性 / 実現可能性 / 整合性の 3 観点、main agent 順次実行 → Phase 5 で agent 3 並列化)、writing-spec 自動再起動 | iteration-1 主要 3 ケース完了 (pass / reject / needs-fix すべて 100% 期待通り判定、18/18 pass) |
 | 5 | `spec-leader` | Isolate → ship の 6 ステージ遷移制御。Phase 5 orchestrator 連携インタフェース確定済 | 限定テスト準備済 (未実施) |
 | 6 | `writing-plan` | Plan ステージ: spec.md → plans/<spec-name>.md、技術設計 + タスク分解 (チェックボックス形式) | 未実施 |
 | 7 | `tdd-driver` | Implement ステージ: TDD 強制 (Red → Green → Refactor)、Phase 4 で PreToolUse hook 化予定 | 未実施 |
