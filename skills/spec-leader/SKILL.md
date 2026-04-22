@@ -86,6 +86,32 @@ skill 起動直後、以下を必ず確認してください。
 | git リポジトリでない | 「worktree は git リポジトリ内でのみ動作します」と返して終了 |
 | worktree が既に存在 | 「再開モード」として §14 の手順を実行 |
 
+### 3.1 前提条件違反時の result.json 生成 (2026-04-22 iter-1 改修)
+
+上記のいずれかで早期停止する場合、**Phase 5 orchestrator が「なぜ処理されなかったか」を機械可読で取得できるよう**、停止時点で `specs/<spec-name>.result.json` を以下で生成してください。
+
+```json
+{
+  "spec": "<spec-name>",
+  "verdict": "precondition-failed",
+  "started_at": "<skill 起動時刻>",
+  "ended_at": "<停止時刻>",
+  "final_commit": null,
+  "stages_completed": [],
+  "stages_failed": [],
+  "stages_blocked": [],
+  "user_action_required": "<解消手順、上の対応列と同等の文言>",
+  "precondition_violation": "<違反した前提条件の識別子、例: 'review_verdict_not_pass'>",
+  "notes": "前提条件違反で処理未開始"
+}
+```
+
+- progress.json は**生成しない** (処理が始まっていない = 進捗がないため)
+- worktree / progress.md も生成しない
+- result.json は再開モード / 次回起動判定のシグナルとしても利用される
+
+これにより、orchestrator は `result.json` のみで「この Spec は次サイクルで何をすれば開始可能になるか」を判定できます。
+
 ## 4. インタフェース定義 (Phase 5 改修不要の契約)
 
 Phase 3 時点で orchestrator 連携用インタフェースを固定します。Phase 5 で orchestrator を実装する際、本 skill の改修を不要とするための契約です。
