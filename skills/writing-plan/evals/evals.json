@@ -3,10 +3,10 @@
   "evals": [
     {
       "id": 0,
-      "prompt": "worktrees/login/specs/login.md を Plan に展開してください。",
-      "expected_output": "技術設計 + タスク分解 (チェックボックス形式) を含む plans/login.md を生成。各タスクにテスト先行記述あり。frontmatter status: plan-complete。",
+      "prompt": "specs/login.md を Plan に展開してください。",
+      "expected_output": "2026-04-22 改修後: main 側の specs/login.md を入力に、specs/login.plan.md (main 側) を生成。技術設計 + タスク分解 (チェックボックス + files_touched 必須)、frontmatter status: plan-complete。",
       "assertions": [
-        {"text": "outputs/plans/login.md が作成されている", "category": "output-file"},
+        {"text": "outputs/specs/login.plan.md が作成されている (main 側、plans/ サブディレクトリではない)", "category": "output-file"},
         {"text": "章構成に『技術設計概要』『アーキテクチャ』『データモデル』『API 設計』『実装タスク分解』『テスト戦略』『リスクと対応』のいずれか 5 つ以上の同等見出しが含まれる", "category": "format"},
         {"text": "タスク分解セクションに `- [ ] T-N:` 形式のチェックボックスが 3 つ以上含まれる", "category": "format"},
         {"text": "各タスクに『テスト』『テスト先行』等、先行テストに関する記述が含まれる", "category": "correctness"},
@@ -16,23 +16,23 @@
     },
     {
       "id": 1,
-      "prompt": "worktrees/login/specs/login.md を Plan に展開してください。(plans/login.md が既に存在)",
+      "prompt": "specs/login.md を Plan に展開してください。(specs/login.plan.md が既に存在)",
       "expected_output": "既存 Plan の上書き確認を求める。ユーザー承認なしに上書きしない。",
       "assertions": [
         {"text": "出力に『既に存在』『上書き』『ユーザー承認』等の語が含まれる", "category": "behavior"},
-        {"text": "既存 plans/login.md が書き換えられていない", "category": "anti-pattern"}
+        {"text": "既存 specs/login.plan.md が書き換えられていない", "category": "anti-pattern"}
       ],
-      "files": ["inputs/specs/login.md", "inputs/plans/login.md"]
+      "files": ["inputs/specs/login.md", "inputs/specs/login.plan.md"]
     },
     {
       "id": 2,
-      "prompt": "specs/login.md (worktree 外、main 側) を Plan に展開してください。",
-      "expected_output": "作業ディレクトリが worktree でないため前提条件違反で停止。",
+      "prompt": "worktrees/login/ 内で Plan を展開してください。",
+      "expected_output": "2026-04-22 改修後: 本 skill は main 側で動作する前提のため、worktree 内起動を拒否して停止。",
       "assertions": [
-        {"text": "出力に『worktree』『main』のいずれか + 『停止』『エラー』『動作しません』等の語が含まれる", "category": "behavior"},
-        {"text": "plans/ 配下にファイルが作成されていない", "category": "anti-pattern"}
+        {"text": "出力に『worktree 内で動作しない』『main 側』『worktree は Isolate 後』等の語が含まれる", "category": "behavior"},
+        {"text": "worktrees/login/plans/ にも specs/<spec>.plan.md にもファイルが作成されていない", "category": "anti-pattern"}
       ],
-      "files": ["inputs/specs/login.md"]
+      "files": []
     }
   ]
 }
