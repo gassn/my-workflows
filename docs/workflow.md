@@ -47,12 +47,10 @@ orchestrator (Phase 5 で実装)
 
 ```mermaid
 flowchart LR
-    Z[Brainstorming] --> Y{複数Spec?}
-    Y -->|はい| X[DAG 構築]
-    Y -->|いいえ| A[Spec]
-    X --> A
+    Z[Brainstorming] --> X[DAG 構築<br/>暫定]
+    X --> A[Spec]
     A --> B[Spec Review]
-    B -->|承認| X2[DAG 構築 - 確定]
+    B -->|承認| X2[DAG 構築<br/>確定]
     B -->|差戻し| A
     X2 --> D[Plan]
     D --> C[Isolate]
@@ -66,7 +64,7 @@ flowchart LR
     I -.->|skill 改善| Z
 ```
 
-**DAG 構築ステージは段階的アップデート方式**: 同一 skill を Brainstorming 直後 (暫定 DAG) と Spec Review 完了後 (確定 DAG) の 2 回起動します。複数 Spec が無い場合はスキップします。
+**DAG 構築ステージは段階的アップデート方式**: 同一 skill を Brainstorming 直後 (暫定 DAG) と Spec Review 完了後 (確定 DAG) の 2 回起動します。**単一 Spec の場合も 1 ノード DAG を生成** する統一フロー (2026-04-22 改修、分岐削除)。下流 skill (writing-spec / writing-plan / spec-leader) は常に `specs/dag.md` を実行順序源として参照します。
 
 ## 各ステージ詳細
 
@@ -107,7 +105,7 @@ flowchart LR
 - **1 回目 (Brainstorming 直後)**: 暫定 DAG。全 Spec が `brainstorming-complete` 段階のため依存関係は粗い推測。`specs/dag.md` の冒頭に警告メッセージを含める
 - **2 回目 (Spec Review 完了後)**: 確定 DAG。詳細仕様を反映した正確な依存関係。orchestrator はこの確定 DAG を消費する
 
-**スキップ条件**: Brainstorming ステージで Spec が分割されず単一の場合、本ステージはスキップします。本 skill は単一 Spec 入力時に「DAG 構築は不要です」と返す設計です。
+**スキップ条件**: 2026-04-22 改修により本ステージはスキップしなくなりました。単一 Spec の場合も 1 ノード DAG を生成します (`skills/spec-dag-builder/SKILL.md` §3 参照)。これにより下流 skill (writing-spec / writing-plan / spec-leader) が dag.md を唯一の実行順序源として扱う 1 モード動作となり、フロー分岐が削除されました。
 
 **Phase 5 (orchestrator) との連携**: 本 skill の出力 (`specs/dag.md` + 各 Spec の frontmatter) は orchestrator agent の **唯一の入力データ** です。詳細は `skills/spec-dag-builder/SKILL.md` のセクション 12 を参照してください。
 
