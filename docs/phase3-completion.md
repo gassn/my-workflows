@@ -388,5 +388,9 @@ Phase 3 で目指した「Brainstorming → Learn の 9 ステージを単一 Sp
 - ✅ **DAG 常時生成 + writing-plan DAG 順処理改修完了** (2026-04-22、spec-dag-builder で単一 Spec も 1 ノード DAG 生成、writing-plan §8 で DAG 順処理 + 他 Spec Plan 参照を明記、フロー分岐削除により統一フロー化)
 - ✅ **DAG 改修の再 eval 完了** (spec-dag-builder iter-2 単一 Spec 1 ノード DAG 生成 / writing-plan iter-3 複数 Spec DAG 順処理 + 他 Spec Plan 参照の 4 観点継承を実証)
 - ✅ **iter-5 複数 Spec 統合完走テスト完了** (2026-04-22、util-add + util-subtract の 2 Spec 依存関係で新フロー完走。verdict: shipped × 2、最終 20/20 tests pass、他 Spec Plan 参照 4 観点実現 + AST 解析テストで DRY 再利用自動検証。判明した 2 問題 [mv による plan.md 消失 / merge 時 __pycache__ 競合] を新 Try 3 件として記録)
+- ✅ **テスト&改善ループ R-A/R-B/R-C 実施完了** (2026-04-22、iter-5 Try 3 件 + iter-4 Try 4 件の計 7 Try をすべて適用 + 再 eval で動作確認)
+  - R-A (iter-5 対策): spec-leader §8.1 cp 強制明記 / §13.2 ship 前 clean ステップ追加 / fixture に .gitignore 生成
+  - R-B (iter-4 拡張): verdict `shipped-cross-model-pending` 追加 / ship で consolidated.md archive 移動 / writing-plan §5.3 plan.meta.json 生成 / learn §4 Plan 計測不在時の N/A 明示欄
+  - R-C (再 eval): spec-leader iter-3 v3 (cp + clean) 実測で iter-5 問題再発ゼロ / writing-plan iter-4 (plan.meta.json) で 7 キー生成確認 + parallel_groups_count 定義明確化を追加反映
 
 spec-leader の「Phase 5 改修不要」という設計制約を Phase 3 時点で確定させた点は特に重要で、Phase 5 orchestrator 追加時の spec-leader 改修を不要にする体制を整えました。統合完走テスト (iteration-3) で skill + agent 連携が意図通り機能することを実証、同時に並列 developer の git index 競合など Phase 5 並列化時の具体的課題も可視化できました。ワークフロー全体の見通しが確立し、Phase 4 hook / Phase 5 orchestrator 着手の基盤が整いました。
