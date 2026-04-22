@@ -91,12 +91,12 @@ total_duration_minutes: NNN
 | Brainstorming | XX 分 | |
 | Spec | XX 分 | |
 | Spec Review | XX 分 | N 回 loop |
-| Plan | XX 分 | main 側 (2026-04-22 改修で Isolate より前) |
+| Plan | XX 分 / **N/A (未計測)** | main 側 (2026-04-22 改修で Isolate より前)。`specs/<spec-name>.plan.meta.json` があれば `plan_started_at` / `plan_completed_at` から算出、無ければ **N/A (未計測)** と明示 (iter-4 改修、writing-plan の meta 生成機能と連動) |
 | Isolate | XX 分 | worktree 作成 + Spec/Plan/Review コピー |
 | Implement | XX 分 | |
 | Verify | XX 分 | |
 | Code Review | XX 分 | N 回 loop |
-| ship | XX 分 | main merge + Spec/Plan/Review archive 移動 |
+| ship | XX 分 | main merge + Spec/Plan/Review/Consolidated archive 移動 |
 
 ## 3. うまくいったこと (Keep)
 

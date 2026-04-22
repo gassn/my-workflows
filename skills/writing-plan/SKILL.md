@@ -137,6 +137,30 @@ T-1 → T-2, T-3 (並列可) → T-4 のように DAG を記述。**並列可の
 
 この構造で T-1 と T-2 は files_touched 積集合が空のため安全に並列化可能。T-integrate は逐次実行。
 
+### 5.3 plan.meta.json の生成 (2026-04-22 iter-4 改修、軽量メタ)
+
+Plan 保存時に `specs/<spec-name>.plan.meta.json` も同時生成します (任意、learn skill の時間計測補助):
+
+```json
+{
+  "spec": "<spec-name>",
+  "plan_started_at": "2026-04-22T14:00:00Z",
+  "plan_completed_at": "2026-04-22T14:15:00Z",
+  "tasks_count": 4,
+  "parallel_groups_count": 2,
+  "files_touched_union": ["util/add.py", "util/core.py", ...],
+  "depends_on": ["auth"],
+  "references_other_plans": ["specs/auth.plan.md"]
+}
+```
+
+- `plan_started_at` / `plan_completed_at`: Plan ステージの所要時間を learn skill が計測できる
+- `tasks_count` / `parallel_groups_count`: タスク粒度統計
+- `files_touched_union`: 全タスクの files_touched 和集合 (orchestrator の衝突検出に使用)
+- `references_other_plans`: 本 Plan が参照した他 Spec の Plan (§8.3 の継承追跡)
+
+learn skill §4 時間配分テーブルで Plan 行が旧来 null だった問題 (iter-4 learn 指摘) が解消されます。
+
 ## 6. テスト戦略
 
 - ユニットテスト対象
