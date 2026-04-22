@@ -142,12 +142,21 @@ spec-leader skill を起動 (入力: spec_path, options)
 
 | タイミング | 更新内容 |
 |---|---|
-| skill 起動時 | progress.json / progress.md を初期化 (すべてのステージを `pending`) |
-| ステージ開始時 | `current_stage` を当該ステージ、`stages.<stage>.status` を `in_progress` に |
-| ステージ完了時 | `stages.<stage>.status` を `completed`、`outputs` を記録 |
-| ステージ失敗時 | `stages.<stage>.status` を `failed`、`error` を記録、全停止 |
-| 下位 skill 未実装時 | `stages.<stage>.status` を `blocked`、`missing_skill` を記録、全停止 |
-| skill 終了時 | `result.json` を生成 |
+| skill 起動時 | progress.json / progress.md を初期化 (すべてのステージを `pending`)、`updated_at` を設定 |
+| ステージ開始時 | **前ステージの status が `completed` / `failed` / `blocked` のいずれかで確定している** ことを検証した上で、`current_stage` を当該ステージ、`stages.<stage>.status` を `in_progress` に、`started_at` を記録、`updated_at` を更新 |
+| ステージ完了時 | `stages.<stage>.status` を `completed`、`completed_at` と `outputs` を記録、`updated_at` を更新 |
+| ステージ失敗時 | `stages.<stage>.status` を `failed`、`error` を記録、`updated_at` を更新、全停止 |
+| 下位 skill 未実装時 | `stages.<stage>.status` を `blocked`、`missing_skill` を記録、`updated_at` を更新、全停止 |
+| skill 終了時 | `result.json` を生成 (§7 整合性チェックを通過後のみ) |
+
+#### 5.2.1 更新契約の強化 (2026-04-22 iter-3 改修)
+
+iter-3 統合テストで progress.json の `plan.status: in_progress` が未更新のまま result.json が `verdict: shipped` となる不整合が発生しました。再発防止のため以下を必須化:
+
+1. **atomic write**: progress.json の書き換えは `<path>.tmp` に全文書き込み → `rename` で置換。部分書き込み状態を中断で生じさせない
+2. **ステージ遷移時の二段検証**: 次ステージ開始前に「前ステージの `status` が pending のままでないこと」「前ステージの `started_at` が記録済であれば `completed_at` または `failed_at` / エラー記録が揃っていること」を検証。検証失敗時は progress の破損として停止 + ユーザー相談
+3. **updated_at の厳守**: いかなる更新でも `updated_at` の更新を忘れない。古い `updated_at` のまま次操作を行うと stalled とみなされる
+4. **ステージ飛ばし禁止**: `pending` → `in_progress` を経由せず直接 `completed` にしない。また blocked / failed のステージがあるまま後続を開始しない
 
 ## 6. 進捗ファイル仕様
 
@@ -225,7 +234,7 @@ current_stage: plan
 ```json
 {
   "spec": "<spec-name>",
-  "verdict": "shipped | aborted | paused",
+  "verdict": "shipped | shipped-manual | aborted | aborted-on-resume | paused | precondition-failed",
   "started_at": "2026-04-20T22:30:00Z",
   "ended_at": "2026-04-20T23:45:00Z",
   "final_commit": "abc123def...",
@@ -233,13 +242,52 @@ current_stage: plan
   "stages_failed": [],
   "stages_blocked": [],
   "user_action_required": null,
+  "integrity_warnings": [],
   "notes": "全ステージ正常完了、main にマージ済"
 }
 ```
 
-- `verdict: shipped` = 正常完了
-- `verdict: aborted` = 失敗で終了 (`stages_failed` に失敗ステージを記録)
-- `verdict: paused` = 下位 skill 未実装で停止 (`stages_blocked` / `user_action_required` に指示)
+### 7.1 verdict 種別
+
+| verdict | 意味 | 条件 |
+|---|---|---|
+| `shipped` | 正常完了 (全ステージ機械的に整合) | ship ステージ成功 + 整合性チェック pass |
+| `shipped-manual` | 正常完了だが手動介入あり (2026-04-22 新設、iter-3 知見) | ship ステージ成功 + 整合性チェックで警告あり、`integrity_warnings` に記録 |
+| `aborted` | 失敗で終了 | どこかのステージで `failed`、`stages_failed` に記録 |
+| `aborted-on-resume` | 再開モードで中止選択 (2026-04-22 新設、iter-2 知見) | §14 再開モードで「中止」ユーザー選択 |
+| `paused` | 下位 skill 未実装で停止 | ステージが `blocked`、`stages_blocked` / `user_action_required` に指示 |
+| `precondition-failed` | 前提条件違反で停止 (2026-04-22 新設、iter-1 知見) | §3 前提条件チェックで NG、`user_action_required` に修正手順 |
+
+### 7.2 integrity_warnings (2026-04-22 iter-3 改修)
+
+result.json 生成時に progress.json との整合性チェックを行い、不一致があれば `integrity_warnings` 配列に記録します。verdict は手動介入を含む派生値 (`shipped-manual`) に切り替え、隠蔽を防ぎます。
+
+#### 整合性チェック項目
+
+- `stages_completed` の各要素について、progress.json `stages.<name>.status == "completed"` であること
+- `stages_failed` / `stages_blocked` の各要素について、progress.json と status が一致すること
+- `started_at` / `ended_at` のタイムスタンプが progress.json の最古 `started_at` / 最新 `updated_at` と整合すること
+- progress.json に `in_progress` のまま残っているステージがないこと (handoff 漏れの検出)
+
+#### 警告の記録形式
+
+```json
+"integrity_warnings": [
+  {
+    "kind": "stage_status_mismatch",
+    "stage": "plan",
+    "progress_status": "in_progress",
+    "result_declared": "completed",
+    "note": "手動介入で completed 扱いに補完された可能性"
+  }
+]
+```
+
+#### 影響
+
+- 警告がある場合、verdict が `shipped` → `shipped-manual` に自動切替
+- learn skill が `integrity_warnings` を受けて Try 提案として具体化 (spec-leader の progress 更新漏れとして)
+- orchestrator (Phase 5) は `shipped-manual` を手動介入の必要があった Spec として分類、類似ケースの再発時に早期警告
 
 ## 8. Isolate ステージ
 
