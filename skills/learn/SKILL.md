@@ -91,12 +91,12 @@ total_duration_minutes: NNN
 | Brainstorming | XX 分 | |
 | Spec | XX 分 | |
 | Spec Review | XX 分 | N 回 loop |
-| Isolate | XX 分 | |
-| Plan | XX 分 | |
+| Plan | XX 分 | main 側 (2026-04-22 改修で Isolate より前) |
+| Isolate | XX 分 | worktree 作成 + Spec/Plan/Review コピー |
 | Implement | XX 分 | |
 | Verify | XX 分 | |
 | Code Review | XX 分 | N 回 loop |
-| ship | XX 分 | |
+| ship | XX 分 | main merge + Spec/Plan/Review archive 移動 |
 
 ## 3. うまくいったこと (Keep)
 

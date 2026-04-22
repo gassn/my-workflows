@@ -19,8 +19,8 @@
 | 2 | `spec-dag-builder` | DAG 構築 | 複数 Spec の依存関係解析、Mermaid DAG 生成 (段階的アップデート) | brainstorming (分割時) / spec-review 後 |
 | 3 | `writing-spec` | Spec | Brainstorming ノートから 7 章 Spec 生成、brainstorm.md archive 移動、DAG 順処理、レビュー指摘対応モード | brainstorming 完了後 / spec-review 差戻し時 |
 | 4 | `spec-review` | Spec Review | 完全性 / 実現可能性 / 整合性 (コードベース走査含む) の 3 観点レビュー、verdict (pass/needs-fix/reject) 生成 | writing-spec 完了後 |
-| 5 | `spec-leader` | Isolate〜ship | 6 ステージ遷移制御、progress.json / result.json 管理、Phase 5 orchestrator 連携 I/F 確定済 | spec-review verdict: pass 後 |
-| 6 | `writing-plan` | Plan | Spec → plans/<spec-name>.md、タスク分解 (チェックボックス + files_touched)、DAG 並列判定 | spec-leader Isolate 完了後 |
+| 5 | `spec-leader` | Isolate〜ship | 5 ステージ遷移制御 (Isolate / Implement / Verify / Code Review / ship)、progress.json / result.json 管理、Phase 5 orchestrator 連携 I/F 確定済 (Plan は前工程で完了済扱い) | writing-plan 完了後 |
+| 6 | `writing-plan` | Plan | Spec → specs/<spec-name>.plan.md (main 側配置)、タスク分解 (チェックボックス + files_touched)、DAG 並列判定。他 Spec の Plan 参照可能 | spec-review verdict: pass 後 |
 | 7 | `tdd-driver` | Implement | TDD サイクル (Red → Green → Refactor) 強制、テスト存在チェック | spec-leader Plan 完了後 |
 | 8 | `verification-before-completion` | Verify | 4 カテゴリ検証 (test / lint / type / 手動 AC) 強制、verify-report.md 生成 | spec-leader Implement 完了後 |
 | 9 | `receiving-code-review` | Code Review 後 | reviewer 指摘集約、Plan §2 更新 + T-fix 追加、Implement→Verify→Code Review 循環 (最大 3 回) | spec-leader Code Review で needs-fix/reject 検出時 |
@@ -58,11 +58,11 @@ flowchart TD
 
     WS -->|自動起動| SR["spec-review skill<br/>3 観点レビュー"]
     SR -->|needs-fix/reject| WS
-    SR -->|pass| SL["spec-leader skill<br/>6 ステージ遷移制御"]
+    SR -->|pass| WP["writing-plan skill<br/>main 側で specs/&lt;spec&gt;.plan.md 生成<br/>files_touched + DAG 必須"]
+    WP -->|Plan 完了 + spec-leader 起動| SL["spec-leader skill<br/>5 ステージ遷移制御"]
 
-    SL -->|Isolate| ISO["git worktree 作成<br/>worktrees/spec/<spec-name>"]
-    ISO -->|Plan| WP["writing-plan skill<br/>plans/.md + DAG + files_touched"]
-    WP -->|Implement| TDD["tdd-driver skill<br/>TDD 強制"]
+    SL -->|Isolate| ISO["git worktree 作成 + Spec/Plan/Review コピー<br/>worktrees/&lt;spec-name&gt;/"]
+    ISO -->|Implement| TDD["tdd-driver skill<br/>TDD 強制"]
     TDD -->|タスクごと| DEV["developer agent<br/>Red→Green→Refactor"]
     DEV -->|完了| VB["verification-before-completion skill<br/>4 カテゴリ強制"]
     VB -->|verifier 呼び出し| VFR["verifier agent<br/>test/lint/type/AC 並列"]
@@ -124,10 +124,10 @@ sequenceDiagram
     WS->>SR: 自動起動 (WS §11)
     SR->>SR: verdict 判定
     alt verdict: pass
-        SR->>SL: 自動起動 (SR §9)
-        SL->>SL: Isolate (worktree 作成)
-        SL->>WP: Plan ステージ
-        WP->>SL: plans/.md 生成
+        SR->>WP: 自動起動 (2026-04-22 改修)
+        WP->>WP: specs/<spec>.plan.md 生成 (main 側)
+        WP->>SL: spec-leader 起動 (WP §7.1)
+        SL->>SL: Isolate (worktree 作成 + Spec/Plan/Review コピー)
         SL->>TDD: Implement ステージ
         TDD->>SL: developer agents 完了
         SL->>VB: Verify ステージ
@@ -157,18 +157,21 @@ flowchart LR
         BrainMD["<spec>.brainstorm.md"]
         SpecMD["<spec>.md"]
         ReviewMD["<spec>.review.md"]
+        PlanMDmain["<spec>.plan.md<br/>(2026-04-22 改修: main 側配置)"]
         DagMD["dag.md"]
         ProgJSON["<spec>.progress.json"]
         ResJSON["<spec>.result.json"]
         ArchiveBrain["archive/<spec>.brainstorm.md"]
         ArchiveSpec["archive/<spec>.md"]
+        ArchivePlan["archive/<spec>.plan.md"]
+        ArchiveReview["archive/<spec>.review.md"]
         LearnMD["archive/<spec>.learn.md"]
     end
 
     subgraph worktree["worktrees/<spec>/ (spec-leader Isolate 後)"]
         WSpecMD["specs/<spec>.md (コピー)"]
         WReviewMD["specs/<spec>.review.md (コピー)"]
-        PlanMD["plans/<spec>.md"]
+        WPlanMD["plans/<spec>.md (コピー)"]
         SrcFiles["実装コード + テスト"]
         VerifyMD["verify-report.md"]
         ReviewCodeMD["reviews/code.md"]
@@ -181,11 +184,14 @@ flowchart LR
     BrainMD -->|writing-spec| SpecMD
     BrainMD -.archive 移動.-> ArchiveBrain
     SpecMD -->|spec-review| ReviewMD
+    SpecMD -->|writing-plan (main)| PlanMDmain
+    PlanMDmain -.他 Spec が並列参照.-> PlanMDmain
+
     SpecMD -->|spec-leader Isolate| WSpecMD
     ReviewMD --> WReviewMD
+    PlanMDmain --> WPlanMD
 
-    WSpecMD -->|writing-plan| PlanMD
-    PlanMD -->|developer agent| SrcFiles
+    WPlanMD -->|developer agent| SrcFiles
     SrcFiles -->|verifier agent| VerifyMD
     SrcFiles -->|code-reviewer| ReviewCodeMD
     SrcFiles -->|security-reviewer| ReviewSecMD
@@ -194,8 +200,9 @@ flowchart LR
     ReviewSecMD --> ConsolidMD
     ReviewXMMD --> ConsolidMD
 
-    WSpecMD -.ship.-> ArchiveSpec
     SpecMD -.ship archive.-> ArchiveSpec
+    PlanMDmain -.ship archive.-> ArchivePlan
+    ReviewMD -.ship archive.-> ArchiveReview
     ProgJSON -->|learn 入力| LearnMD
     ResJSON -->|learn 入力| LearnMD
 
@@ -205,8 +212,8 @@ flowchart LR
 
     classDef artifact fill:#f0f4c3,stroke:#827717,color:#000
     classDef skill fill:#e1f5ff,stroke:#0288d1,color:#000
-    class BrainMD,SpecMD,ReviewMD,DagMD,ProgJSON,ResJSON,ArchiveBrain,ArchiveSpec,LearnMD artifact
-    class WSpecMD,WReviewMD,PlanMD,SrcFiles,VerifyMD,ReviewCodeMD,ReviewSecMD,ReviewXMMD,ConsolidMD,WProgMD artifact
+    class BrainMD,SpecMD,ReviewMD,PlanMDmain,DagMD,ProgJSON,ResJSON,ArchiveBrain,ArchiveSpec,ArchivePlan,ArchiveReview,LearnMD artifact
+    class WSpecMD,WReviewMD,WPlanMD,SrcFiles,VerifyMD,ReviewCodeMD,ReviewSecMD,ReviewXMMD,ConsolidMD,WProgMD artifact
     class SL skill
 ```
 
@@ -269,10 +276,10 @@ Brainstorming ノートから 7 章 Spec (目的 / スコープ / 機能要件 /
 Spec に対して**完全性 / 実現可能性 / 整合性** (コードベース走査込み) の 3 観点で AI レビュー。verdict 判定 (Critical 1 件以上→reject / Major 3 件以上→needs-fix / その他→pass) + 軸別スコア (overall = 0.4×完全 + 0.3×実現 + 0.3×整合)。needs-fix/reject 時は writing-spec を自動再起動。
 
 ### spec-leader
-Isolate → Plan → Implement → Verify → Code Review → ship の 6 ステージ遷移制御。progress.json (機械可読、atomic write + 二段検証) / progress.md (人間可読) / result.json (整合性チェック込み、verdict 6 種) を管理。並列 Implement は sub-worktree 方式 (`options.parallel_implement: true` で opt-in)。再開モード (§14) + 前提条件違反時 result.json (§3.1) + 失敗時全停止 (§15) を完備。
+Isolate → Implement → Verify → Code Review → ship の **5 ステージ** 遷移制御 (Plan は writing-plan で前工程に完了済、2026-04-22 改修)。progress.json (機械可読、atomic write + 二段検証) / progress.md (人間可読) / result.json (整合性チェック込み、verdict 6 種) を管理。Isolate で main 側 Spec / Plan / Review を worktree にコピー。並列 Implement は sub-worktree 方式 (`options.parallel_implement: true` で opt-in)。再開モード (§14) + 前提条件違反時 result.json (§3.1、plan_path も前提) + 失敗時全停止 (§15) を完備。
 
 ### writing-plan
-Spec → 技術設計 + タスク分解 (チェックボックス + **files_touched** 必須)。タスク粒度 30-60 分。§5.2 並列判定は「DAG 先祖子孫関係にない」AND「files_touched 積集合空」の 2 条件。共通ファイル編集は T-integrate 集約タスクで最終工程に分離推奨。
+Spec → 技術設計 + タスク分解 (チェックボックス + **files_touched** 必須)。タスク粒度 30-60 分。§5.2 並列判定は「DAG 先祖子孫関係にない」AND「files_touched 積集合空」の 2 条件。共通ファイル編集は T-integrate 集約タスクで最終工程に分離推奨。**main 側で動作** し `specs/<spec-name>.plan.md` を生成 (2026-04-22 改修)。他 Spec の Plan を `specs/*.plan.md` で参照可能。完了後 spec-leader を自動起動。
 
 ### tdd-driver
 Implement ステージで TDD (Red → Green → Refactor) を強制。テスト存在チェック (Phase 4 で PreToolUse hook 化予定)。developer agent への指示テンプレートで先行テストを明示。テスト後付け / テスト赤のまま進行 / Plan 外タスク実装を禁止。
@@ -316,9 +323,9 @@ worktree に対し 4 カテゴリ検証を並列実行 (テスト / Lint / 型 /
 | brainstorming 完了 | → | writing-spec | 単一 Spec or DAG 順で各 Spec |
 | writing-spec 完了 | → | spec-review | 常時 (writing-spec §11) |
 | spec-review needs-fix/reject | → | writing-spec | §13 レビュー指摘対応モード |
-| spec-review pass | → | spec-leader | 常時 (spec-review §9) |
-| spec-leader Isolate 完了 | → | writing-plan | 常時 |
-| spec-leader Plan 完了 | → | tdd-driver + developer | 常時 |
+| spec-review pass | → | **writing-plan** | 2026-04-22 改修: Plan が main 側で先行実行 |
+| writing-plan 完了 + ユーザー承認 | → | spec-leader | writing-plan §7.1 |
+| spec-leader Isolate 完了 | → | tdd-driver + developer | 2026-04-22 改修: Plan はもう前工程で完了済 |
 | spec-leader Implement 完了 | → | verification-before-completion + verifier | 常時 |
 | spec-leader Verify pass | → | code-reviewer + security-reviewer + cross-model-review | 3 並列 |
 | Code Review needs-fix/reject | → | receiving-code-review | 1 人以上 needs-fix/reject |
