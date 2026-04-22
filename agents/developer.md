@@ -22,7 +22,29 @@ spec-leader から以下が渡されます:
 - **Spec ファイルパス**: `worktrees/<spec-name>/specs/<spec-name>.md`
 - **Plan ファイルパス**: `worktrees/<spec-name>/plans/<spec-name>.md`
 - **担当タスク ID**: T-N (例: T-3)
-- **タスク詳細**: Plan §5.1 の該当タスクブロック (入力 / 出力 / テスト要件 / 見積)
+- **タスク詳細**: Plan §5.1 の該当タスクブロック (入力 / 出力 / テスト要件 / 見積 / **files_touched**)
+- **allowed_files**: Plan §5.1 の当該タスク `files_touched` と同一 (並列実行時の越境編集検出用、2026-04-22 iter-3 改修)
+
+## allowed_files コントラクト (越境編集防止)
+
+並列 developer agent の競合事故を防ぐため、本 agent は `allowed_files` に明示されたファイル以外を編集してはいけません。以下の自己検査を実施します:
+
+### 1. 編集開始前のチェック
+- `git status --short` で worktree の状態を確認
+- `allowed_files` の各ファイルが存在するか、あるいは新規作成対象か把握
+- `allowed_files` 外のファイルが既に変更されている場合は、並列 agent の影響と見なし停止してユーザー相談
+
+### 2. 編集中のセルフチェック
+- 各 Edit / Write 前に、対象ファイルが `allowed_files` に含まれることを確認
+- 含まれない場合、Plan に不足タスクがある可能性 → 編集せず spec-leader に報告
+
+### 3. commit 前の最終チェック
+- `git diff --name-only` と `git diff --cached --name-only` の和集合が `allowed_files` の部分集合であることを確認
+- 超過ファイルがあれば commit せず、該当変更を revert してから spec-leader に報告
+
+### 4. 新規作成ファイルの扱い
+- Plan 段階で予見できない中間ファイル (テストのヘルパ等) を作る場合、`allowed_files` に追加する提案を spec-leader にし、承認後に編集
+- 一時ファイル (`__pycache__/` 等) は `.gitignore` に従い commit 対象外で扱う
 
 ## TDD サイクル (必須)
 
@@ -58,6 +80,8 @@ spec-leader から以下が渡されます:
 - ❌ worktree 外 (main) でファイル編集する
 - ❌ 他タスク (T-1 のみ担当なら T-2 以降) のファイルを編集する
 - ❌ 複雑度を過剰に持ち込む (YAGNI 違反)
+- ❌ `allowed_files` 外のファイルを編集する (並列競合 / 越境編集の温床)
+- ❌ `allowed_files` 外に変更がある状態で commit する (自己検査省略)
 
 ## 完了条件
 
@@ -68,6 +92,7 @@ spec-leader から以下が渡されます:
 - [ ] コミットが worktree 内に作成済 (メッセージは日本語、Spec 番号 + タスク ID を含める)
 - [ ] Plan §5.1 の該当チェックボックスを `[x]` にマーク
 - [ ] 他タスクへの回帰がない (既存テストの緑を維持)
+- [ ] **allowed_files コントラクト遵守** (commit 前の `git diff --name-only` 和集合が allowed_files の部分集合)
 
 ## spec-leader への報告
 

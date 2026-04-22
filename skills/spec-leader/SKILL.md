@@ -289,27 +289,57 @@ current_stage: plan
 
 ## 10. Implement ステージ
 
-**目的**: Plan ファイルのタスクを TDD で実装する。
+**目的**: Plan ファイルのタスクを TDD で実装する。並列実行時は git index 競合を**物理的に排除する sub-worktree 方式**を採用する (2026-04-22 iter-3 改修)。
 
 ### 10.1 処理手順
 
 1. `tdd-driver` skill を起動 (テスト先行強制モード)
-2. Plan ファイルのタスクリストを読み込み、各タスクについて `developer` agent を呼び出す
-   - Phase 3 では順次実行 (並列化は Phase 5 で検討)
-   - Agent Teams が安定したら developer agent を並列起動
-3. 各タスク完了時に progress.md にログ追記
-4. 全タスク完了で `stages.implement` を `completed` に更新
+2. Plan §5.2 の並列判定ロジック (依存 DAG + `files_touched` 積集合空) から並列実行可能なタスクグループを抽出
+3. **並列グループ内の各タスクについて sub-worktree を作成**: `git worktree add worktrees/<spec>/sub-<task-id> spec/<spec-name>` (親 worktree の HEAD から分岐、独立 index)
+4. 各 developer agent を `allowed_files` = Plan の `files_touched` を渡して起動、sub-worktree 内で作業
+5. 全 developer 完了後、親 worktree で `git cherry-pick <各 sub-worktree の commit>` で順次統合 (**逐次実行、index 競合を親で起こさせない**)
+6. 全タスク完了で sub-worktree を削除 (`git worktree remove --force worktrees/<spec>/sub-<task-id>`)
+7. progress.json の `stages.implement` を `completed` に更新 (outputs に各 T-N の commit SHA を記録)
 
-### 10.2 品質ゲート
+### 10.2 並列実行の具体的フロー
+
+```
+並列グループ: [T-1, T-2] (files_touched 積集合空)
+逐次: [T-integrate]
+
+1. sub-worktree 作成:
+   git worktree add worktrees/calculator/sub-T-1 spec/calculator
+   git worktree add worktrees/calculator/sub-T-2 spec/calculator
+2. developer agent 並列起動:
+   developer (T-1, allowed_files=[calculator/add.py, tests/test_add.py], cwd=sub-T-1)
+   developer (T-2, allowed_files=[calculator/subtract.py, tests/test_subtract.py], cwd=sub-T-2)
+3. 各 developer が独立 index で commit 作成 (競合一切なし)
+4. 親 worktree で cherry-pick 統合:
+   cd worktrees/calculator
+   git cherry-pick <T-1 の sub-worktree 最終 commit>
+   git cherry-pick <T-2 の sub-worktree 最終 commit>
+5. T-integrate は親 worktree で逐次実行 (__init__.py 等の共通ファイル編集)
+6. sub-worktree クリーンアップ
+```
+
+### 10.3 品質ゲート
 
 - Plan ファイルの全タスク (チェックボックス) が完了済 ([x]) であること
-- 新規コミットが worktree 内に作成されていること
+- 新規コミットが親 worktree 内 (spec/<spec-name> ブランチ) に作成されていること
+- cherry-pick 時にコンフリクトが発生していないこと (発生時は stages.implement を failed に記録して停止、ユーザーに手動解消を依頼)
+- sub-worktree がすべて削除されていること
 
-### 10.3 下位 skill / agent 未実装時
+### 10.4 下位 skill / agent 未実装時
 
 - `tdd-driver` skill 未実装 → blocked
 - `developer` agent 未実装 → blocked
 - いずれの場合も progress に missing を記録して全停止
+
+### 10.5 Phase 3 移行措置 (並列実行未使用)
+
+Phase 3 初期は Agent Teams の多階層 subagent 動作が未検証のため、**sub-worktree 方式は任意** です。順次実行 (全タスクを直列、親 worktree で 1 つずつ実装) でも本 skill は動作します。ただし Plan の `files_touched` は必須 (Phase 5 並列化の準備として記録される)。
+
+実運用で並列化を有効にする場合は、spec-leader 起動時に `options.parallel_implement: true` を渡して sub-worktree 方式を有効化します。
 
 ## 11. Verify ステージ
 

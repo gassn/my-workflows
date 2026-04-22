@@ -86,16 +86,43 @@ Spec の機能要件を実現するための技術選定と高レベル設計。
 
 ### 5.1 タスクリスト (チェックボックス形式、必須)
 
+各タスクは以下の項目を必須で持ちます (`files_touched` は並列競合防止のために必須、2026-04-22 の iter-3 統合テスト知見に基づく改修):
+
 - [ ] T-1: <タスク名> (見積: XX 分)
   - 入力: <前提ファイル / 依存タスク>
   - 出力: <成果物>
   - テスト: <先行して書くテストの概要>
+  - **files_touched**: `[<編集予定ファイルの絶対的相対パス>, ...]` (必須、空配列不可)
 - [ ] T-2: ...
 - [ ] T-N: ...
 
-### 5.2 タスク間の依存関係
+#### 5.1.1 files_touched 必須化の理由
 
-T-1 → T-2, T-3 (並列可) → T-4 のように DAG を記述。developer agent の並列起動判断に使用。
+過去 (iter-3 統合テスト) で、並列実行した T-1/T-2 の developer agent が共通ファイル (`__init__.py`) を同時編集して git index 競合が発生、T-2 の commit が消失する事故が起きました。`files_touched` を Plan 段階で明示することで:
+
+- 並列実行可否を `files_touched` の積集合で機械判定できる (積集合が空 = 並列可)
+- developer agent が allowed_files として受け取り、越境編集を自己検出できる
+- 共通ファイル (バンドル / entrypoint 等) は専用の集約タスク (T-integrate) として最後に分離可能
+
+### 5.2 タスク間の依存関係と並列判定
+
+T-1 → T-2, T-3 (並列可) → T-4 のように DAG を記述。**並列可の判定は以下 2 条件の AND**:
+
+1. タスク間の依存関係が DAG 上で先祖-子孫関係にない
+2. タスクの `files_touched` が空積集合 (= 編集対象ファイルが一切重ならない)
+
+共通ファイルを複数タスクが編集する場合は、**T-integrate タスクを最終工程として分離** することを推奨:
+
+```markdown
+- [ ] T-1: add(a,b) 実装
+  - files_touched: [calculator/add.py, tests/test_add.py]
+- [ ] T-2: subtract(a,b) 実装
+  - files_touched: [calculator/subtract.py, tests/test_subtract.py]
+- [ ] T-integrate: __init__.py に公開 API 追加 (T-1, T-2 完了後)
+  - files_touched: [calculator/__init__.py]
+```
+
+この構造で T-1 と T-2 は files_touched 積集合が空のため安全に並列化可能。T-integrate は逐次実行。
 
 ## 6. テスト戦略
 
@@ -158,3 +185,6 @@ Phase 3 時点では main agent が直接コードベースを調査します。
 - ❌ テスト先行の記述を省略する (tdd-driver がブロックする)
 - ❌ main で本 skill を起動する (worktree 内のみ)
 - ❌ ユーザー承認なしに Plan を保存する
+- ❌ `files_touched` を省略する (並列競合検出が効かなくなる、§5.1.1 で必須化)
+- ❌ `files_touched` が重なる 2 タスクを並列可と判定する (§5.2 並列判定の 2 条件 AND を無視)
+- ❌ 共通ファイルを複数タスクに散らす (T-integrate 集約タスクで最終工程に分離)
