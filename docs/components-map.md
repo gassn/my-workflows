@@ -370,7 +370,122 @@ worktree に対し 4 カテゴリ検証を並列実行 (テスト / Lint / 型 /
 | 実現可能性 | spec-review §4.2 | 非機能要件達成性 / 技術制約整合 / 時間制約 / 依存関係 |
 | 整合性 | spec-review §4.3 | 他 Spec + archive + **コードベース** + dag.md |
 
-## 8. 補足
+## 8. 使用ツール / コマンドマトリクス
+
+各 skill / agent が実行時に利用する Claude Code 組込みツール (Read / Edit / Write / Bash / Grep / Glob 等) と、Bash 経由で呼び出す外部コマンド (git / pytest / lint / 型チェッカー等) をまとめます。`○` = 主に使用、`△` = 条件によって使用、空欄 = 通常は不使用。
+
+### 8.1 skill × Claude Code ツール
+
+| skill | Read | Edit | Write | Grep | Glob | Bash | その他 |
+|---|---|---|---|---|---|---|---|
+| `brainstorming` | ○ (コードベース / CLAUDE.md / Spec) | | ○ (specs/<spec>.brainstorm.md) | ○ (深スキャン) | ○ (軽スキャン) | △ (git log 参照) | — |
+| `spec-dag-builder` | ○ (各 brainstorm.md / spec.md / 既存 dag.md) | | ○ (specs/dag.md) | △ (frontmatter 解析) | ○ (specs/*.md / *.brainstorm.md) | | — |
+| `writing-spec` | ○ (brainstorm.md) | △ (既存 brainstorm.md の status 更新) | ○ (specs/<spec>.md、archive 移動先) | | ○ (specs/ 配下走査) | △ (git mv 相当の書き込み) | — |
+| `spec-review` | ○ (spec.md / dag.md / archive / コードベース) | | ○ (specs/<spec>.review.md) | ○ (整合性観点でコードベース走査) | ○ (archive / specs/) | | — |
+| `spec-leader` | ○ (spec.md / plan.md / review.md / progress.json) | ○ (progress.json 更新) | ○ (progress.md / result.json) | | | ○ (git worktree add/remove/list, git merge, git checkout, git mv, find (clean), cp) | — |
+| `writing-plan` | ○ (spec.md / 他 Spec の plan.md) | | ○ (specs/<spec>.plan.md + plan.meta.json) | ○ (コードベース調査 / 命名規約確認) | ○ (specs/*.plan.md の他 Spec 参照) | △ (Phase 5 で investigator agent 経由) | — |
+| `tdd-driver` | ○ (plan.md) | | | | | | (実際の編集は developer agent に委譲) |
+| `verification-before-completion` | ○ (plan.md / spec.md / package.json 等) | | | | | | (実際の検証は verifier agent に委譲) |
+| `receiving-code-review` | ○ (code.md / security.md / cross-model.md / plan.md) | ○ (Plan への T-fix 追加 + frontmatter 更新) | ○ (reviews/consolidated.md) | | | | — |
+| `cross-model-review` | ○ (spec.md / plan.md) | | ○ (reviews/cross-model.md placeholder) | | | ○ (`git diff main...spec/<spec>`) | WebFetch / MCP (Phase 3 後期〜4 で外部モデル自動呼び出し時) |
+| `learn` | ○ (progress.json / result.json / plan.meta.json / archive spec.md/plan.md/review.md) | | ○ (specs/archive/<spec>.learn.md) | | | | — |
+
+### 8.2 agent × Claude Code ツール
+
+| agent | Read | Edit | Write | Grep | Glob | Bash | その他 |
+|---|---|---|---|---|---|---|---|
+| `developer` | ○ (spec.md / plan.md) | ○ (実装ファイル編集) | ○ (新規実装 / テスト) | △ (allowed_files 自己検査) | △ | ○ (`pytest` / `git add` / `git commit` / `git diff --name-only` / `git diff --cached --name-only`) | — |
+| `verifier` | ○ (spec.md / plan.md / package.json 等) | | ○ (verify-report.md) | | ○ (プロジェクトマニフェスト探索) | ○ (`pytest` / `npm test` / `eslint` / `ruff` / `mypy` / `tsc --noEmit` / `go test` / `go vet` / `py_compile` / `make test` 等) | — |
+| `code-reviewer` | ○ (src / tests / plan.md / spec.md) | | ○ (reviews/code.md) | ○ (類似実装 / 命名規約) | ○ (src/ 配下走査) | ○ (`git diff main...spec/<spec>`) | — |
+| `security-reviewer` | ○ (src / tests / spec.md) | | ○ (reviews/security.md) | ○ (OWASP パターン / 秘密鍵漏洩検査) | ○ (設定ファイル / 依存ファイル) | ○ (`git diff` / `npm audit` / `pip-audit` / `cargo audit` 等) | — |
+| `cross-model-reviewer` | ○ (spec.md / plan.md) | | ○ (reviews/cross-model.md placeholder) | | | ○ (`git diff main...spec/<spec>`) | WebFetch (Phase 3 後期で OpenAI API / Gemini API 直接呼び出し時) / Task (MCP 経由の外部モデル連携時) |
+
+### 8.3 skill / agent が実行する外部コマンド詳細
+
+**git 操作 (主に spec-leader / developer / reviewer 群)**:
+
+| コマンド | 主な使用者 | 用途 |
+|---|---|---|
+| `git init` | spec-leader eval fixture | テスト用 repo 初期化 |
+| `git worktree add worktrees/<spec> -b spec/<spec>` | spec-leader (§8 Isolate) | 独立 worktree 作成 |
+| `git worktree remove --force` | spec-leader (§13 ship) | worktree 削除 |
+| `git worktree list` | spec-leader (品質ゲート) | worktree 存在確認 |
+| `git checkout main` | spec-leader (§13 ship) | ship 前のブランチ切替 |
+| `git merge --no-ff spec/<spec>` | spec-leader (§13 ship) | Spec ブランチの main 統合 |
+| `git mv specs/<spec>.md specs/archive/` | spec-leader (§13.2 手順 6) | archive 移動 |
+| `git add <allowed_files>` | developer | commit 前ステージ |
+| `git commit -m "T-N: ..."` | developer | タスク commit |
+| `git diff main...spec/<spec>` | code-reviewer / security-reviewer / cross-model-reviewer | レビュー対象差分取得 |
+| `git diff --cached --name-only` | developer (allowed_files 自己検査) | commit 前のステージ確認 |
+| `git diff --name-only` | developer (allowed_files 自己検査) | 作業ツリー変更確認 |
+| `git rev-parse --is-inside-work-tree` | spec-leader / writing-plan (§3 前提条件) | git repo 判定 |
+| `git rev-parse --git-dir` | writing-plan (§3 前提条件) | worktree 内起動の検出 (改修後は拒否) |
+| `git log --oneline` | learn (補助) | ship 前後のコミット確認 |
+| `git show <sha>:<path>` | (復旧手段) | 過去 commit からのファイル復元 |
+
+**テスト / Lint / 型チェック (verifier / developer)**:
+
+| 言語 | テスト | Lint | 型チェック |
+|---|---|---|---|
+| Python | `pytest` / `python3 -m pytest` | `ruff check` / `flake8` / (代替) `python3 -m py_compile` | `mypy` / `pyright` |
+| TypeScript / JavaScript | `npm test` (`jest` 経由が多い) | `eslint --max-warnings=0` | `tsc --noEmit` |
+| Go | `go test ./...` | `golangci-lint run` / (標準) `go vet ./...` | `go vet` + `staticcheck` |
+| Rust | `cargo test` | `cargo clippy` | `cargo check` |
+
+**依存ライブラリ脆弱性スキャン (security-reviewer)**:
+
+| エコシステム | コマンド |
+|---|---|
+| npm | `npm audit` |
+| pip / Python | `pip-audit` |
+| Cargo | `cargo audit` |
+| Go | `govulncheck` |
+
+**クリーンコマンド (spec-leader §13.2 手順 0)**:
+
+```bash
+# Python / 汎用
+find worktrees/<spec-name> -type d \( -name __pycache__ -o -name .pytest_cache \) -exec rm -rf {} +
+
+# Node
+rm -rf worktrees/<spec-name>/node_modules worktrees/<spec-name>/dist
+
+# または 言語別の clean ターゲット
+cd worktrees/<spec-name> && (npm run clean || make clean) 2>/dev/null || true
+```
+
+**外部モデル連携 (cross-model-review skill / cross-model-reviewer agent、Phase 3 後期〜4)**:
+
+| モデル | 呼び出し手段 | Phase 3 時点 |
+|---|---|---|
+| OpenAI Codex / GPT-5 | WebFetch で API 呼び出し、または CLI (`openai`) | 手動依頼 placeholder のみ |
+| Gemini | WebFetch で Google AI Studio API | 手動依頼 placeholder のみ |
+| MCP 経由 | Task ツール or MCP 対応 SDK | 手動依頼 placeholder のみ |
+
+### 8.4 skill / agent 共通の基本ツール
+
+全 skill / agent が共通で利用する (明示記載の無い場合も暗黙に使う可能性がある):
+
+- **Read**: skill 定義 (SKILL.md) や依存ファイル (CLAUDE.md, ROADMAP.md, docs/workflow.md) の参照
+- **Bash**: 出力ディレクトリ作成 (`mkdir -p`)、ファイル整理 (`ls`, `cat`, `rm` 等) の事務的操作
+- **Edit / Write**: SKILL.md で規定された出力ファイル生成
+- **Task**: 他 agent 並列呼び出し (Phase 5 以降、orchestrator / spec-leader が利用)
+
+### 8.5 Phase 4 / Phase 5 で追加予定のツール
+
+| 追加予定 | 対応 skill / agent | 備考 |
+|---|---|---|
+| PreToolUse hook (Edit/Write) | tdd-driver | テスト存在確認の物理ブロック |
+| Stop hook | verification-before-completion | 完了宣言前の verify-report.md 強制 |
+| PostToolUse hook (Edit/Write) | tdd-driver | テストファイル変更時の自動テスト実行 |
+| WorktreeCreate / WorktreeRemove hook | spec-leader | Isolate / ship の物理化 |
+| TaskCompleted hook | spec-leader | progress.json 自動更新 |
+| SessionStart hook | (全 skill) | プロジェクト固有 skill / コンテキスト自動注入 |
+| orchestrator agent | spec-leader | 複数 Spec の並列起動 (Phase 5) |
+| investigator agent | writing-plan / brainstorming | コードベース / 他 Spec Plan 並列調査 (Phase 5) |
+| spec-reviewer agent × 3 並列 | spec-review | 完全性 / 実現可能性 / 整合性 の並列化 (Phase 5) |
+
+## 9. 補足
 
 ### genshijin-without-docs
 
