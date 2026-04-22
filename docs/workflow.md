@@ -54,9 +54,9 @@ flowchart LR
     A --> B[Spec Review]
     B -->|承認| X2[DAG 構築 - 確定]
     B -->|差戻し| A
-    X2 --> C[Isolate]
-    C --> D[Plan]
-    D --> E[Implement]
+    X2 --> D[Plan]
+    D --> C[Isolate]
+    C --> E[Implement]
     E --> F[Verify]
     F -->|失敗| E
     F -->|成功| G[Code Review]
@@ -143,35 +143,46 @@ flowchart LR
 | 入力 | Spec ファイル |
 | 出力 | レビューコメント + 承認ステータス |
 | Agent Teams 活用 | ○ (AI reviewer 3 並列: 完全性 / 実現可能性 / 既存仕様との整合性) |
-| 品質ゲート | ユーザー承認なしに Isolate へ進めない |
+| 品質ゲート | ユーザー承認なしに Plan へ進めない |
 
-### 3. Isolate
+### 3. Plan
 
-**目的**: Spec 単位で worktree を作成し、main を汚さず実装を進めます。
+**目的**: Spec を技術設計に展開し、タスクに分解します (spec-kit の Plan + Tasks 相当)。**main ブランチ側で実施** し、Plan ファイルを他 Spec の spec-leader から参照可能な状態に置くことで、Phase 5 の並列 Spec 実行時の相互参照 (API 契約 / 命名規約 / データモデル整合性) を可能にします (2026-04-22 改修、iter-3 知見 + Phase 5 並列化準備)。
+
+| 項目 | 内容 |
+|---|---|
+| 担当層 | main agent (+ Phase 5 以降 investigator agent) |
+| 入力 | 承認済み Spec ファイル (`specs/<spec-name>.md`) |
+| 出力 | Plan ファイル (`specs/<spec-name>.plan.md`、main 側に配置) |
+| Agent Teams 活用 | △ (Phase 3 は main agent 単独、Phase 5 で investigator agent 並列化: コードベース調査 / 依存ライブラリ調査 / 類似実装調査 + **他 Spec の Plan 参照**) |
+| 品質ゲート | Plan ファイルにタスク分解 (チェックボックス形式 + `files_touched`) が含まれること |
+
+**Plan ファイル配置 (改修)**: `specs/<spec-name>.plan.md` (main ブランチ、Spec ファイルと同階層)。従来 (worktree 内) から main 側に変更したため:
+
+- 他 Spec の spec-leader / writing-plan が `specs/*.plan.md` パターンで並列実行中の Plan を参照可能
+- Plan 失敗 / Spec 差戻し時に worktree 作成の無駄が発生しない
+- ship 時に `specs/archive/<spec-name>.plan.md` に archive 移動、過去の設計判断を将来の Spec で参照可能
+
+**Phase 3 初期の動作**: main agent が直接 writing-plan skill で Plan を生成。Phase 5 で investigator agent を並列起動してコードベース調査 / 他 Spec Plan 走査を分離します (writing-plan / investigator のインタフェースは Phase 3 時点で確定)。
+
+### 4. Isolate
+
+**目的**: Plan が確定した Spec について worktree を作成し、main を汚さず実装を進めます。**Plan の後に実施** することで、Plan 段階での差戻しによる worktree 作成の無駄を排除します。
 
 | 項目 | 内容 |
 |---|---|
 | 担当層 | specLeader |
-| 入力 | 承認済み Spec ファイルパス |
+| 入力 | 承認済み Spec ファイル + Plan ファイル |
 | 出力 | worktree path + ブランチ名 |
 | Agent Teams 活用 | × |
-| 品質ゲート | worktree 作成成功確認、Spec ファイルが worktree から参照可能であること |
+| 品質ゲート | worktree 作成成功確認、Spec + Plan ファイルが worktree から参照可能であること |
 
 **worktree 命名規則**: `worktrees/<spec-name>/`、ブランチ名 `spec/<spec-name>`
 
-### 4. Plan
-
-**目的**: Spec を技術設計に展開し、タスクに分解します (spec-kit の Plan + Tasks 相当)。
-
-| 項目 | 内容 |
-|---|---|
-| 担当層 | specLeader + 調査 worker |
-| 入力 | Spec ファイル |
-| 出力 | Plan ファイル (技術設計 + タスクリスト) |
-| Agent Teams 活用 | △ (コードベース調査 / 依存ライブラリ調査 / 類似実装調査を並列実行) |
-| 品質ゲート | Plan ファイルにタスク分解 (チェックボックス形式) が含まれること |
-
-**Plan ファイル配置**: worktree 内 `plans/<spec-name>.md`
+**worktree への持ち込み**: Isolate ステージで以下を worktree 内にコピー:
+- `specs/<spec-name>.md` → `worktrees/<spec-name>/specs/<spec-name>.md`
+- `specs/<spec-name>.plan.md` → `worktrees/<spec-name>/plans/<spec-name>.md` (**名前規則は worktree 側では従来通り `plans/` サブディレクトリ**)
+- `specs/<spec-name>.review.md` → `worktrees/<spec-name>/specs/<spec-name>.review.md` (参考情報として)
 
 ### 5. Implement
 
