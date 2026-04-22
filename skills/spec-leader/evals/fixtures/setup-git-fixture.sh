@@ -67,6 +67,25 @@ git config user.email "spec-leader-eval-fixture@example.com"
 git config user.name "spec-leader-eval-fixture"
 echo "# Test project for spec-leader evals (fixture generated at $(date -u +%FT%TZ))" > README.md
 
+# 一時ファイル類の .gitignore (2026-04-22 iter-5 改修: merge 時 __pycache__ 競合予防)
+cat > .gitignore <<'GITIGNORE'
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+build/
+
+# その他 generated
+*.log
+.DS_Store
+GITIGNORE
+
 # Spec コピー (任意、SCRIPT_DIR はスクリプト冒頭で確定済み)
 if [[ -n "$SPEC_NAME" ]]; then
   INPUT_DIR="$SCRIPT_DIR/../inputs/specs"
