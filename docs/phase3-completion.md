@@ -383,5 +383,7 @@ Phase 3 で目指した「Brainstorming → Learn の 9 ステージを単一 Sp
 - ✅ **spec-leader iteration-3 統合完走テスト完了** (2026-04-22、skill + agent 連携で Brainstorming → ship 一気通貫 verdict: shipped、25 分で完走)
 - ⏳ 残 agent 3 種 (investigator / spec-reviewer / orchestrator) は Phase 5 対応
 - ✅ **§5.3 改善提案 11 件すべて適用完了** (2026-04-22、5 バッチで段階反映)
+- ✅ **Plan→Isolate 順序反転改修完了** (2026-04-22、workflow.md / spec-leader / writing-plan / components-map / learn の 5 ドキュメントで整合)
+- ✅ **改修後の再 eval 完了** (writing-plan iter-2 全 3 ケース pass / spec-leader iter-3 v2 全 4 ケース pass / iter-4 統合完走 verdict: shipped で新フロー実証、Code Review loop 0 回 + git index 競合 0 回)
 
 spec-leader の「Phase 5 改修不要」という設計制約を Phase 3 時点で確定させた点は特に重要で、Phase 5 orchestrator 追加時の spec-leader 改修を不要にする体制を整えました。統合完走テスト (iteration-3) で skill + agent 連携が意図通り機能することを実証、同時に並列 developer の git index 競合など Phase 5 並列化時の具体的課題も可視化できました。ワークフロー全体の見通しが確立し、Phase 4 hook / Phase 5 orchestrator 着手の基盤が整いました。
