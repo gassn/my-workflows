@@ -168,6 +168,17 @@ spec-leader skill を起動 (入力: spec_path, options)
 - **Code Review 完了 → ship はユーザー承認を必須** (Q5 確定)
 - ship 完了後、Learn ステージは main agent + ユーザーの領域のため本 skill は起動せず、結果ファイルの生成と「Learn を実施してください」の提案に留める
 
+### 5.1.1 複数 Spec の DAG 順起動 (2026-04-22 改修)
+
+`specs/dag.md` は単一 / 複数 Spec にかかわらず常に存在 (spec-dag-builder が 1 ノード DAG も生成) します。本 skill は writing-plan skill から 1 Spec 単位で起動される想定で、**本 skill 自体は 1 Spec を処理** します。
+
+複数 Spec を扱う場合の起動制御は以下:
+
+- **Phase 3**: writing-plan が DAG の parallel_group 順に 1 Spec ずつ Plan 生成 → 各 Plan 完了後に spec-leader を順次起動 (writing-plan SKILL.md §8.2 準拠)。本 skill は単純に呼ばれた Spec を処理するだけで、DAG を意識する必要はない
+- **Phase 5**: orchestrator agent が DAG の parallel_group 内で複数 spec-leader を並列起動。本 skill のインタフェース (入力: spec_path / 出力: progress.json + result.json) は変更不要で、orchestrator が他 Spec の result.json を監視して依存解決
+
+本 skill の責務はあくまで 1 Spec の Isolate〜ship 遷移制御です。DAG 解析や複数 Spec 協調は writing-plan / orchestrator の責務となります。
+
 ### 5.2 進捗ファイルの更新タイミング
 
 | タイミング | 更新内容 |

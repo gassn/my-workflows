@@ -6,7 +6,7 @@ description: >
   本ワークフロー (docs/workflow.md) の Spec ステージを担う。
   「Spec 書いて」「仕様書作って」「Spec 化して」「Brainstorming を Spec に起こして」等で起動。
   生成後の brainstorm.md は specs/archive/ に移動し、status を archived に更新する。
-  複数 Spec の場合は specs/dag.md を参照して DAG 順に処理する。
+  specs/dag.md を参照して DAG 順に処理する (単一 Spec も 1 ノード DAG が生成される統一フロー、2026-04-22 改修)。
   Brainstorming が完了している (status: brainstorming-complete) ことが必須前提。
 ---
 
@@ -47,7 +47,7 @@ skill 起動直後、以下を必ず確認してください。
 - 入力 Brainstorming ノートの存在 (`specs/<spec-name>.brainstorm.md`)
 - frontmatter `status` が `brainstorming-complete` であること
 - 対応する `specs/<spec-name>.md` がまだ存在しないこと (上書き防止)
-- 複数 Spec 処理時は `specs/dag.md` の存在確認
+- `specs/dag.md` の存在確認 (単一 / 複数にかかわらず必須、2026-04-22 改修)
 
 前提条件を満たさない場合、以下のエラー対応を行ってください。
 
@@ -201,7 +201,7 @@ Spec ファイル生成と承認完了後、以下の手順で Brainstorming ノ
 
 ## 8. 複数 Spec 処理時の DAG 順走査
 
-Brainstorming で複数 Spec に分割され、`specs/dag.md` が存在する場合、本 skill は **DAG 順に処理** します。
+`specs/dag.md` は単一 / 複数 Spec にかかわらず常に存在する前提 (spec-dag-builder が 1 ノード DAG も生成、2026-04-22 改修)。本 skill は **DAG 順に処理** します。
 
 ### 8.1 処理順序の決定
 

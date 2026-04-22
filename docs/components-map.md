@@ -52,9 +52,8 @@
 ```mermaid
 flowchart TD
     User[ユーザー要件発話] -->|起点| BS["brainstorming skill<br/>Spec 前の要件深掘り"]
-    BS -->|複数 Spec 分割時| DAG1["spec-dag-builder skill<br/>暫定 DAG 生成"]
-    BS -->|単一 Spec| WS["writing-spec skill<br/>7 章 Spec 生成"]
-    DAG1 -->|DAG 順| WS
+    BS -->|常時| DAG1["spec-dag-builder skill<br/>暫定 DAG 生成<br/>(単一 Spec も 1 ノード DAG)"]
+    DAG1 -->|DAG 順| WS["writing-spec skill<br/>7 章 Spec 生成"]
 
     WS -->|自動起動| SR["spec-review skill<br/>3 観点レビュー"]
     SR -->|needs-fix/reject| WS
@@ -114,13 +113,9 @@ sequenceDiagram
     participant LRN as learn
 
     User->>BS: 要件発話
-    BS->>BS: 深掘り + 分割判定
-    alt 複数 Spec
-        BS->>DAG: 暫定 DAG 生成
-        DAG->>WS: DAG 順で起動
-    else 単一 Spec
-        BS->>WS: 直接起動
-    end
+    BS->>BS: 深掘り + 分割判定 (結果は常に DAG として表現)
+    BS->>DAG: 暫定 DAG 生成 (単一でも 1 ノード、2026-04-22 改修)
+    DAG->>WS: DAG 順で起動
     WS->>SR: 自動起動 (WS §11)
     SR->>SR: verdict 判定
     alt verdict: pass
@@ -319,8 +314,8 @@ worktree に対し 4 カテゴリ検証を並列実行 (テスト / Lint / 型 /
 
 | 前工程 | → | 次工程 | 条件 |
 |---|---|---|---|
-| brainstorming 完了 | → | spec-dag-builder | 複数 Spec に分割時 |
-| brainstorming 完了 | → | writing-spec | 単一 Spec or DAG 順で各 Spec |
+| brainstorming 完了 | → | spec-dag-builder | 常時 (2026-04-22 改修、単一 Spec も 1 ノード DAG 生成) |
+| spec-dag-builder 完了 | → | writing-spec | DAG 順で各 Spec (単一の場合は 1 Spec のみ) |
 | writing-spec 完了 | → | spec-review | 常時 (writing-spec §11) |
 | spec-review needs-fix/reject | → | writing-spec | §13 レビュー指摘対応モード |
 | spec-review pass | → | **writing-plan** | 2026-04-22 改修: Plan が main 側で先行実行 |
