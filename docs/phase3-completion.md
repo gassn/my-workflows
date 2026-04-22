@@ -207,7 +207,9 @@ skill 11 種 + agent 5 種の連携で Brainstorming → ship の一気通貫完
 
 ### 5.3 動作確認で得られた改善提案 (iteration 横断)
 
-eval 実行中に Agent / 動作結果から抽出した skill / SKILL.md への改善提案です。次 iteration 以降で順次反映を検討します。
+eval 実行中に Agent / 動作結果から抽出した skill / SKILL.md への改善提案です。
+
+**適用状況 (2026-04-22): 全 11 件適用完了**。コミット `a7c1ef9` / `0696562` / `3966f17` / `7441a12` / `18ea2e0` の 5 バッチで段階的に反映しました (No.5 はバッチ 3 §3.2.1 に統合反映、個別改修不要と判断)。
 
 1. **spec-leader §3 early-return 時に result.json を生成する案** (提案元: spec-review iteration-1 eval 2 Agent)
    - 内容: 前提条件違反で停止した場合も `specs/<spec-name>.result.json` を `verdict: precondition-failed` で生成
@@ -380,6 +382,6 @@ Phase 3 で目指した「Brainstorming → Learn の 9 ステージを単一 Sp
 - ✅ **agent iteration-1 単体動作確認 100% pass** (責務境界 + TDD 遵守 + バイアス防止を確認)
 - ✅ **spec-leader iteration-3 統合完走テスト完了** (2026-04-22、skill + agent 連携で Brainstorming → ship 一気通貫 verdict: shipped、25 分で完走)
 - ⏳ 残 agent 3 種 (investigator / spec-reviewer / orchestrator) は Phase 5 対応
-- ⏳ 11 件の改善提案 (§5.3) は次 iteration で順次反映
+- ✅ **§5.3 改善提案 11 件すべて適用完了** (2026-04-22、5 バッチで段階反映)
 
 spec-leader の「Phase 5 改修不要」という設計制約を Phase 3 時点で確定させた点は特に重要で、Phase 5 orchestrator 追加時の spec-leader 改修を不要にする体制を整えました。統合完走テスト (iteration-3) で skill + agent 連携が意図通り機能することを実証、同時に並列 developer の git index 競合など Phase 5 並列化時の具体的課題も可視化できました。ワークフロー全体の見通しが確立し、Phase 4 hook / Phase 5 orchestrator 着手の基盤が整いました。
