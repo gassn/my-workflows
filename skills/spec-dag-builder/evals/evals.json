@@ -4,15 +4,19 @@
     {
       "id": 0,
       "prompt": "specs/ ディレクトリを見て DAG を構築してください。",
-      "expected_output": "specs/ 配下に Brainstorming ノートが 1 件のみ存在する場合、『単一 Spec のため DAG 構築は不要です』と返して終了する。specs/dag.md は作成しない。",
+      "expected_output": "2026-04-22 改修後: specs/ 配下に Brainstorming ノートが 1 件のみでも **1 ノード DAG** を specs/dag.md に生成する。parallel_group: 1 の単一エントリとして記述、Mermaid 図 + 並列グループ表 + 推奨実行順序を含む。",
       "assertions": [
         {
-          "text": "specs/dag.md ファイルを作成していない",
-          "category": "anti-pattern"
+          "text": "outputs/specs/dag.md が作成されている (単一 Spec でも 1 ノード DAG 生成、2026-04-22 改修)",
+          "category": "output-file"
         },
         {
-          "text": "出力に『単一 Spec』『DAG 構築は不要』『1 件のみ』等の単一 Spec を示すメッセージが含まれている",
-          "category": "behavior"
+          "text": "dag.md に Mermaid 図 (graph TD のブロック) が含まれている",
+          "category": "format"
+        },
+        {
+          "text": "dag.md の並列実行グループ表に 1 行のみ (parallel_group: 1 の単一 Spec) が含まれる",
+          "category": "correctness"
         }
       ],
       "files": ["inputs/specs/foo.brainstorm.md"]
