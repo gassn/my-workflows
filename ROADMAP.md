@@ -66,13 +66,13 @@
 
 skill 単体では強制力が弱いため、hook で挙動を物理的に固定化します。
 
-- [x] **SessionStart hook** (部分): genshijin-without-docs のロード実装済 (`hooks/load-session-skills.sh`)、Phase 3 skill 群の追加は未
-- [x] **PreToolUse hook (Edit/Write)**: TDD 強制 (実装ファイル編集前にテスト存在を確認、なければ exit 2 でブロック)。2026-04-23 実装 (`hooks/pre-tool-use-tdd.sh`、worktree 内のみ強制、SKIP_TDD_HOOK=1 で bypass 可)
-- [ ] **PostToolUse hook (Edit/Write)**: テストファイル変更時の自動テスト実行
-- [x] **Stop hook**: 完了宣言前の検証状態確認 (warning 運用、2026-04-23 実装: `hooks/stop-verify-before-completion.sh`、worktree 内で verify-report.md + verdict: pass 確認、Phase 4 後期でブロック化検討)
-- [ ] **WorktreeCreate hook**: worktree 初期化 (Spec ファイルコピー、ブランチ確認)
-- [ ] **WorktreeRemove hook**: worktree 削除前の未コミット警告
-- [ ] **TaskCompleted hook**: タスク完了時の進捗ファイル更新
+- [x] **SessionStart hook**: 2026-04-23 バッチ 2 で brainstorming を追加 (`hooks/load-session-skills.sh`、起点 skill のみ常駐で context 膨張を抑制、他 Phase 3 skill は自動起動チェーンで連鎖読込)
+- [x] **PreToolUse hook (Edit/Write)**: TDD 強制 (実装ファイル編集前にテスト存在を確認、なければ exit 2 でブロック)。2026-04-23 バッチ 1 実装 (`hooks/pre-tool-use-tdd.sh`、worktree 内のみ強制、SKIP_TDD_HOOK=1 で bypass 可)
+- [x] **PostToolUse hook (Edit/Write)**: テストファイル変更時の自動テスト実行 (warning レベル)。2026-04-23 バッチ 2 実装 (`hooks/post-tool-use-auto-test.sh`、worktree 内のみ対象、Python/TS/JS/Go/Rust/Ruby 対応、timeout 30s、SKIP_AUTO_TEST_HOOK=1 で bypass 可)
+- [x] **Stop hook**: 完了宣言前の検証状態確認 (warning 運用、2026-04-23 バッチ 1 実装: `hooks/stop-verify-before-completion.sh`、worktree 内で verify-report.md + verdict: pass 確認、Phase 4 後期でブロック化検討)
+- [ ] **WorktreeCreate hook**: worktree 初期化 (Phase 5 Agent `isolation: "worktree"` 採用時、または EnterWorktree 使用時に発火。Phase 3 spec-leader の Bash 手動 add は対象外のため Phase 5 連携で実装予定)
+- [ ] **WorktreeRemove hook**: worktree 削除前の未コミット警告 (Phase 5 連携で実装)
+- [ ] **TaskCompleted hook**: タスク完了時の進捗ファイル更新 (Claude Code の Task 系との連携設計が必要、Phase 5 で実装)
 - [ ] **InstructionsLoaded hook**: CLAUDE.md / Spec ファイルロード時の追加コンテキスト
 - [ ] hookify 連携検証 (会話履歴から hook ルールを自動生成)
 
