@@ -34,6 +34,17 @@
           }
         ]
       }
+    ],
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/my-workflows/hooks/instructions-loaded-context.sh",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }

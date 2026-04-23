@@ -73,10 +73,12 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 - [ ] **WorktreeCreate hook**: worktree 初期化 (Phase 5 Agent `isolation: "worktree"` 採用時、または EnterWorktree 使用時に発火。Phase 3 spec-leader の Bash 手動 add は対象外のため Phase 5 連携で実装予定)
 - [ ] **WorktreeRemove hook**: worktree 削除前の未コミット警告 (Phase 5 連携で実装)
 - [ ] **TaskCompleted hook**: タスク完了時の進捗ファイル更新 (Claude Code の Task 系との連携設計が必要、Phase 5 で実装)
-- [ ] **InstructionsLoaded hook**: CLAUDE.md / Spec ファイルロード時の追加コンテキスト
-- [ ] hookify 連携検証 (会話履歴から hook ルールを自動生成)
+- [x] **InstructionsLoaded hook**: 2026-04-23 バッチ 3 実装 (`hooks/instructions-loaded-context.sh`)。CLAUDE.md ロード時に Phase 進捗サマリ、`specs/*.md` ロード時に関連ファイル (plan.md / review.md / progress.json / archive / worktree) 参照リストを additionalContext として追加
+- [x] **hookify 連携検証**: 2026-04-23 バッチ 3 で設計方針確定 (`docs/hookify-setup.md`)。Phase 4 では導入方針とシナリオをドキュメント化、実際の有効化は Phase 6 のドッグフーディング段階で learn.md 蓄積後に実施予定
 
 **完了条件**: Phase 3 で実装した skill が hook なしでは挙動しなくなる (= 強制力が効いている) こと。
+
+**Phase 4 現状 (2026-04-23)**: 9 項目中 6 実装済 + 2 は Phase 5 連携依存として先送り + 1 は設計方針確定 (Phase 6 で有効化)。TDD 強制 (PreToolUse) / 自動テスト (PostToolUse) / Verify 状態確認 (Stop) / SKILL 常駐インデックス (SessionStart) / 関連ファイル提示 (InstructionsLoaded) が動作し、Phase 3 skill の強制力は当初想定の大半を物理化。WorktreeCreate/Remove と TaskCompleted は Phase 5 Agent isolation 移行時に合わせて再実装するのが自然なため、Phase 4 は実質完了扱い。
 
 ## Phase 5: orchestrator 追加 (複数 Spec 並列)
 
