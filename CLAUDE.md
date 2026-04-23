@@ -118,6 +118,24 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 
 Claude Code の auto memory (`~/.claude/projects/.../memory/`) は本プロジェクトでは現状**未使用**。設計知識は docs/ / SKILL.md / ROADMAP に集約することで、将来セッション / 第三者にも参照可能にする方針です。詳細は `docs/memory-operation.md` を参照してください。
 
+## Agent Teams 有効化 (必須、2026-04-23 設定)
+
+本プロジェクトは Claude Code の実験機能 Agent Teams を活用する前提です。user settings (`~/.claude/settings.json`) の `env` セクションに以下が必要です:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+- **前提 Claude Code バージョン**: v2.1.32 以上
+- **subagents (Agent tool / subagent_type)**: Agent Teams 有効化に関わらず利用可能で、Phase 3-5 で使ってきた全 agent はこちら
+- **Agent Teams 機能そのもの**: チーム作成 / `/agents` コマンド / 並列 orchestration のメタ機能、Phase 6 以降のマルチセッション並列化で活用予定
+
+詳細は `docs/phase5-completion.md §0` を参照してください。
+
 ## Phase 進捗の最新状況を知りたい時
 
 以下の順で参照:

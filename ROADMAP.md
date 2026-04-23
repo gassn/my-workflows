@@ -100,14 +100,15 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 
 ワークフロー全体の継続的改善とプロジェクト公開を検討します。
 
-- [ ] **全フェーズの統合テスト**: 実プロジェクトでの試用 (本リポジトリ自身を題材にドッグフーディング)
+- [ ] **全フェーズの統合テスト**: 実プロジェクトでの試用 (本リポジトリ自身を題材にドッグフーディング、Phase 6 バッチ 2 で tmux-dashboard-mvp 題材にて着手中)
 - [ ] **skill-creator による各 skill の eval iteration**: 定量評価と反復改善
-- [ ] **CLAUDE.md の体系化**: プロジェクト横断の共通ルールと個別ルールの分離
-- [ ] **memory 運用の最適化**: 記憶すべき情報とそうでない情報の線引き整備
-- [ ] **プロジェクト全体のドキュメント整備**
+- [x] **CLAUDE.md の体系化**: プロジェクト横断の共通ルールと個別ルールの分離 (2026-04-23 バッチ 1 完了、160→128 行スリム化、skill/agent 詳細を components-map に委任)
+- [x] **memory 運用の最適化**: 記憶すべき情報とそうでない情報の線引き整備 (2026-04-23 バッチ 1 完了、`docs/memory-operation.md` 新設で方針明文化)
+- [x] **プロジェクト全体のドキュメント整備** (2026-04-23 バッチ 1 で README / CLAUDE.md 更新、Phase 3-5 完了レポート 3 点セット + components-map + hookify-setup + memory-operation で体系完成)
 - [ ] **各 skill の利用例とベストプラクティス集**
 - [ ] **ライセンス選定**
 - [ ] **GitHub への公開** (任意)
+- [x] **Agent Teams 機能の有効化** (2026-04-23 設定): user settings の env セクションに `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 追加 (Claude Code v2.1.32 以上、本プロジェクトは v2.1.118 で確認)。subagents は Agent Teams 無効時も利用可のため Phase 3-5 成果物への影響なし。詳細は `docs/phase5-completion.md §0` 参照
 
 **完了条件**: 第三者が本リポジトリを clone して、最小手順で本ワークフローを自分の環境に適用できること。
 

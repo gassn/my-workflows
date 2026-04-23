@@ -4,6 +4,27 @@
 - **Phase 5 実質完了**: 2026-04-23 (同日、3 バッチ完走)
 - **対象**: `ROADMAP.md` Phase 5 の orchestrator + agent 拡張 + 複数 Spec 並列管理 7 項目
 
+## 0. Agent Teams 有効化について (2026-04-23 追記、Phase 6 着手中に判明)
+
+Phase 5 の設計調査 / ドッグフーディング着手時に、本プロジェクト user settings に Claude Code の **Agent Teams 機能を有効化する環境変数** (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) が未設定だったことが判明しました。対応として `~/.claude/settings.json` の `env` セクションに追加しました:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+**重要**: この未設定は本 Phase の設計 (orchestrator skill + subagents 多階層禁止対応) には **影響しません**。理由:
+
+- **subagents** (Agent tool / subagent_type 指定): Agent Teams 有効化に関わらず利用可能な機能。Phase 3-5 で使ってきた developer / verifier / reviewer 等の agent 起動はこちらの範疇
+- **Agent Teams**: チーム作成 / `/agents` コマンド / 並列 orchestration のためのメタ機能。本プロジェクトの orchestrator skill (main agent が逐次管理) とは別系統
+
+Phase 5 で判明した「Subagents cannot spawn their own subagents」制約は subagents の仕様で、Agent Teams の有無とは独立です。従って orchestrator skill 設計 (Phase 5 バッチ 3 で実施) は現状のまま有効で、Agent Teams 有効化は Phase 6 以降のマルチセッション並列化 / tmux TUI ダッシュボードと連動して活用される想定です。
+
+新セッション起動時に環境変数が反映されます。
+
 ## 1. サマリ
 
 Phase 5 で目指した「複数 Spec 並列実行」「investigator / spec-reviewer agent 並列化」「WorktreeCreate/Remove/TaskCompleted hook 連携」を達成。ただし **Phase 5 バッチ 3 で Claude Code 公式仕様「Subagents cannot spawn their own subagents」が判明**、当初の agent 3 階層設計 (orchestrator → spec-leader → workers) は動作不可と確定したため、orchestrator を agent から **skill** に再設計する大きな方針転換を実施しました。
