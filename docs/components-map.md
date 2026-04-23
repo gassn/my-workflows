@@ -462,6 +462,37 @@ cd worktrees/<spec-name> && (npm run clean || make clean) 2>/dev/null || true
 | Gemini | WebFetch で Google AI Studio API | 手動依頼 placeholder のみ |
 | MCP 経由 | Task ツール or MCP 対応 SDK | 手動依頼 placeholder のみ |
 
+### 8.3.1 Claude Code の worktree 関連機能の使い分け (2026-04-23 追記)
+
+Claude Code には worktree 関連の機能が複数存在しますが、それぞれ用途が明確に住み分けられています。本プロジェクトでは以下の方針で使い分けます。
+
+#### 4 系統の比較
+
+| 機能 | 主用途 | 管理主体 | 配置 | CWD 切替 | 永続性 | 並列性 | 自動化適性 |
+|---|---|---|---|---|---|---|---|
+| **`git worktree add` (Bash)** | 永続 + 明示管理の worktree | skill / developer | プロジェクト自由 | なし (Bash 実行) | ship まで永続、明示削除 | 手動複数可 | ○ skill 明示管理 |
+| **Agent `isolation: "worktree"`** | サブエージェントの自動 isolation | Agent tool 内部 | 自動生成、path 返却 | なし (agent 内部のみ) | agent 終了時に自動判定 (変更なし=削除 / あり=保持 + path 返却) | 複数 agent 並列で独立 worktree | ○ agent 単発の自動化 |
+| **`EnterWorktree` / `ExitWorktree`** | ユーザー主導の対話的 temp worktree | user + Claude (対話) | `.claude/worktrees/<name>/` 固定 | session CWD を切替 | session 限定、終了時 keep/remove プロンプト | 同一 session 内で 1 active | × 対話前提 |
+| **`WorktreeCreate` / `WorktreeRemove` hook** | プロジェクト固有の自動化 (Phase 4 予定) | Claude Code hook 機構 | hook 定義次第 | hook 次第 | hook 次第 | hook 次第 | ◎ Phase 4 の本命 |
+
+#### 本プロジェクトでの扱い
+
+| 機能 | 採用状況 |
+|---|---|
+| `git worktree add` (Bash) | **Phase 3 採用 (現状)**。spec-leader §8 / §13 の永続 + 明示管理 + プロジェクト規定配置 (`worktrees/<spec>/`) の要件に合致 |
+| Agent `isolation: "worktree"` | **Phase 5 で検討**。iter-3 統合テストで実測された並列 developer の git index 競合対策として、spec-leader §10.2 sub-worktree 方式の代替候補。個別 developer agent 呼び出しに `isolation: "worktree"` を付与する案 |
+| `EnterWorktree` / `ExitWorktree` | **ユーザー対話の補助に限定**。ユーザーが「login の worktree に入って試したい」等と明示指示した場合の main agent 側 session 切替用 (対話開発用)。skill 自動フロー中には使用しない (tool description が "explicitly instructed only" を要求し、session CWD 切替の副作用が自動化と相性が悪い) |
+| `WorktreeCreate` / `WorktreeRemove` hook | **Phase 4 で導入予定**。spec-leader §8 / §13 の worktree 操作を settings.json で定義する hook に移管、tmux 連携 / 事前後処理 / 命名規約の物理化を実現 |
+
+#### 判断根拠の要点
+
+- **EnterWorktree の tool description** は「user 明示指示 or CLAUDE.md/memory 経由」のみ採用、skill 自動フローからの呼び出しは想定外 → 自動化向けには他の機構が用意されている
+- **Agent `isolation: "worktree"`** は agent 単発の自動 isolation、**完了時の自動クリーンアップ付き**で、永続 worktree 用途には不向き。ただし Phase 5 の並列 developer のような「短時間 + 独立 + 完了後にマージ判定」の用途には最適
+- **Bash `git worktree add`** は Phase 3 の永続 Spec worktree (spec-leader が ship まで保持) の要件に最も直接的に合致
+- **Phase 4 hook** は Phase 3 の Bash 実装をプロジェクト規約として標準化する正式な仕組み
+
+この段階的進化 (Phase 3 Bash → Phase 4 hook → Phase 5 agent isolation 活用) により、Claude Code の各機能を本来の想定用途に沿って活用します。
+
 ### 8.4 skill / agent 共通の基本ツール
 
 全 skill / agent が共通で利用する (明示記載の無い場合も暗黙に使う可能性がある):
