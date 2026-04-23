@@ -70,9 +70,9 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 - [x] **PreToolUse hook (Edit/Write)**: TDD 強制 (実装ファイル編集前にテスト存在を確認、なければ exit 2 でブロック)。2026-04-23 バッチ 1 実装 (`hooks/pre-tool-use-tdd.sh`、worktree 内のみ強制、SKIP_TDD_HOOK=1 で bypass 可)
 - [x] **PostToolUse hook (Edit/Write)**: テストファイル変更時の自動テスト実行 (warning レベル)。2026-04-23 バッチ 2 実装 (`hooks/post-tool-use-auto-test.sh`、worktree 内のみ対象、Python/TS/JS/Go/Rust/Ruby 対応、timeout 30s、SKIP_AUTO_TEST_HOOK=1 で bypass 可)
 - [x] **Stop hook**: 完了宣言前の検証状態確認 (warning 運用、2026-04-23 バッチ 1 実装: `hooks/stop-verify-before-completion.sh`、worktree 内で verify-report.md + verdict: pass 確認、Phase 4 後期でブロック化検討)
-- [ ] **WorktreeCreate hook**: worktree 初期化 (Phase 5 Agent `isolation: "worktree"` 採用時、または EnterWorktree 使用時に発火。Phase 3 spec-leader の Bash 手動 add は対象外のため Phase 5 連携で実装予定)
-- [ ] **WorktreeRemove hook**: worktree 削除前の未コミット警告 (Phase 5 連携で実装)
-- [ ] **TaskCompleted hook**: タスク完了時の進捗ファイル更新 (Claude Code の Task 系との連携設計が必要、Phase 5 で実装)
+- [x] **WorktreeCreate hook**: 2026-04-23 Phase 5 バッチ 2 実装 (`hooks/worktree-create-init.sh`)。Claude Code 管理 worktree (EnterWorktree / Agent isolation) 作成時に main 側の Spec/Plan/Review を worktree にコピー + progress.md 初期化を自動実行。Phase 3 spec-leader Bash 手動 add には発火しない (設計通り)
+- [x] **WorktreeRemove hook**: 2026-04-23 Phase 5 バッチ 2 実装 (`hooks/worktree-remove-check.sh`)。削除前の未コミット / archive 未完警告 + progress.md を main 側 archive にバックアップ (learn skill 入力用)
+- [x] **TaskCompleted hook**: 2026-04-23 Phase 5 バッチ 2 実装 (`hooks/task-completed-progress.sh`)。Claude Code の Task 系 (TaskUpdate status=completed) で発火、worktree 内の progress.md にタスク完了ログを自動追記
 - [x] **InstructionsLoaded hook**: 2026-04-23 バッチ 3 実装 (`hooks/instructions-loaded-context.sh`)。CLAUDE.md ロード時に Phase 進捗サマリ、`specs/*.md` ロード時に関連ファイル (plan.md / review.md / progress.json / archive / worktree) 参照リストを additionalContext として追加
 - [x] **hookify 連携検証**: 2026-04-23 バッチ 3 で設計方針確定 (`docs/hookify-setup.md`)。Phase 4 では導入方針とシナリオをドキュメント化、実際の有効化は Phase 6 のドッグフーディング段階で learn.md 蓄積後に実施予定
 

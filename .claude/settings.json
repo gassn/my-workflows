@@ -45,6 +45,39 @@
           }
         ]
       }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/my-workflows/hooks/worktree-create-init.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "WorktreeRemove": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/my-workflows/hooks/worktree-remove-check.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/my-workflows/hooks/task-completed-progress.sh",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }
