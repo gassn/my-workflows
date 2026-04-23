@@ -11,39 +11,43 @@
 
 ## 2. コンポーネント一覧
 
-### 2.1 skill (11 種)
+### 2.1 skill (12 種)
 
 | # | skill | 担当ステージ | 役割 | 自動起動元 |
 |---|---|---|---|---|
 | 1 | `brainstorming` | Brainstorming | Spec 前の要件深掘り、Spec 分割提案、コードベース精査 | (起点、ユーザーフレーズ) |
-| 2 | `spec-dag-builder` | DAG 構築 | 複数 Spec の依存関係解析、Mermaid DAG 生成 (段階的アップデート) | brainstorming (分割時) / spec-review 後 |
+| 2 | `spec-dag-builder` | DAG 構築 | 複数 Spec の依存関係解析、Mermaid DAG 生成 (段階的アップデート、単一も 1 ノード DAG) | brainstorming 後 / spec-review 後 |
 | 3 | `writing-spec` | Spec | Brainstorming ノートから 7 章 Spec 生成、brainstorm.md archive 移動、DAG 順処理、レビュー指摘対応モード | brainstorming 完了後 / spec-review 差戻し時 |
 | 4 | `spec-review` | Spec Review | 完全性 / 実現可能性 / 整合性 (コードベース走査含む) の 3 観点レビュー、verdict (pass/needs-fix/reject) 生成 | writing-spec 完了後 |
-| 5 | `spec-leader` | Isolate〜ship | 5 ステージ遷移制御 (Isolate / Implement / Verify / Code Review / ship)、progress.json / result.json 管理、Phase 5 orchestrator 連携 I/F 確定済 (Plan は前工程で完了済扱い) | writing-plan 完了後 |
-| 6 | `writing-plan` | Plan | Spec → specs/<spec-name>.plan.md (main 側配置)、タスク分解 (チェックボックス + files_touched)、DAG 並列判定。他 Spec の Plan 参照可能 | spec-review verdict: pass 後 |
+| 5 | `writing-plan` | Plan | Spec → specs/<spec-name>.plan.md (main 側配置)、タスク分解 (チェックボックス + files_touched)、DAG 並列判定 | spec-review verdict: pass 後 |
+| 6 | `spec-leader` | Isolate〜ship | 5 ステージ遷移制御 (Isolate / Implement / Verify / Code Review / ship)、progress.json / result.json 管理 | writing-plan 完了後 |
 | 7 | `tdd-driver` | Implement | TDD サイクル (Red → Green → Refactor) 強制、テスト存在チェック | spec-leader Plan 完了後 |
 | 8 | `verification-before-completion` | Verify | 4 カテゴリ検証 (test / lint / type / 手動 AC) 強制、verify-report.md 生成 | spec-leader Implement 完了後 |
 | 9 | `receiving-code-review` | Code Review 後 | reviewer 指摘集約、Plan §2 更新 + T-fix 追加、Implement→Verify→Code Review 循環 (最大 3 回) | spec-leader Code Review で needs-fix/reject 検出時 |
 | 10 | `cross-model-review` | Code Review (並列) | 外部モデル (Codex / GPT / Gemini) 経由の独立レビュー、Phase 3 は手動依頼運用 | spec-leader Code Review ステージ (3 reviewer 並列の 1 つ) |
 | 11 | `learn` | Learn | progress/result から時間配分 / 手戻り分析、Keep-Problem-Try (具体的パッチ案) 生成 | spec-leader ship 完了後 |
+| 12 | `orchestrator` **(Phase 5 新設)** | 複数 Spec 統括 | 複数 Spec の DAG 管理、spec-leader 逐次起動、merge 順序制御、単一 Spec 時スキップ、再開モード。当初 agent 設計 → agent 多階層禁止により skill に転換 | main agent (複数 Spec 時) / ユーザー明示起動 |
 
-### 2.2 agent (5 種、spec-leader 配下)
+### 2.2 agent (7 種)
 
-| # | agent | 担当ステージ | 役割 | 起動元 |
+| # | agent | 担当 | 役割 | 起動元 |
 |---|---|---|---|---|
 | 1 | `developer` | Implement | Plan のタスク 1 件を TDD で実装、allowed_files コントラクト遵守 | spec-leader + tdd-driver |
 | 2 | `verifier` | Verify | 4 カテゴリを並列実行し verify-report.md 生成 | spec-leader + verification-before-completion |
 | 3 | `code-reviewer` | Code Review | コード品質観点 (可読性 / 設計 / 単純性 / DRY / YAGNI / 保守性) レビュー | spec-leader |
 | 4 | `security-reviewer` | Code Review | セキュリティ観点 (OWASP Top 10 + 認証認可 + 入力検証) レビュー | spec-leader |
 | 5 | `cross-model-reviewer` | Code Review | 外部モデル経由の独立レビュー (Phase 3 は手動依頼) | spec-leader + cross-model-review |
+| 6 | `investigator` **(Phase 5 新設)** | Plan / Brainstorming | codebase / other-plans / dependencies の 3 responsibility 分離並列調査 | writing-plan / brainstorming |
+| 7 | `spec-reviewer` **(Phase 5 新設)** | Spec Review | spec-review skill の 3 観点 (completeness / feasibility / consistency) を独立並列判定 | spec-review skill |
 
-### 2.3 Phase 5 対応 (未実装 3 agent)
+### 2.3 orchestrator の扱い (重要、Phase 5 で agent → skill 転換)
 
-| agent | 役割 | 想定起動元 |
-|---|---|---|
-| `investigator` | コードベース / 依存 / 類似実装調査 | writing-plan (Plan ステージ) / brainstorming (Phase 5 以降) |
-| `spec-reviewer` | spec-review の 3 観点 agent 並列化 | spec-review skill (Phase 5 改修時) |
-| `orchestrator` | 複数 Spec の DAG 管理、spec-leader 起動、merge 順序制御 | main agent / ユーザー |
+Phase 5 バッチ 3 の調査で Claude Code 公式仕様「Subagents cannot spawn their own subagents」が判明し、当初計画の agent 3 階層 (orchestrator → spec-leader → workers) が動作不可と確定。orchestrator は **agent ではなく skill** に再設計し、main agent が本 skill を実行することで orchestrator の役割を担う設計になりました。
+
+- `skills/orchestrator/SKILL.md`: Phase 5 で新設 (12 章構成、228 行)
+- `agents/orchestrator.md`: Phase 5 バッチ 3 で削除 (skill に移植)
+
+詳細は `docs/phase5-completion.md` §3 を参照してください。
 
 ## 3. Mermaid 関係図
 

@@ -211,7 +211,7 @@ Spec ファイル生成と承認完了後、以下の手順で Brainstorming ノ
 
 ### 8.2 並列 vs 順次
 
-本 skill は対話型のため、並列起動はせず **順次処理** します。1 つの Spec を書き終えてユーザー承認を得てから次の Spec に進みます。並列化は Phase 5 の orchestrator agent が担当する責務です。
+本 skill は対話型のため、並列起動はせず **順次処理** します。1 つの Spec を書き終えてユーザー承認を得てから次の Spec に進みます。並列化は Phase 5 の orchestrator skill が担当する責務です。
 
 ### 8.3 中断時の状態
 

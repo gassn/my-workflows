@@ -239,7 +239,7 @@ dag.md 読込 → Spec A (group 1) の Plan 生成 → ユーザー承認 → sp
             → Spec C (group 3) の Plan 生成 → ユーザー承認 → spec-leader 起動
 ```
 
-Phase 5 の orchestrator agent 実装後は、同一 `parallel_group` 内の複数 Spec について writing-plan / spec-leader を並列起動できるよう拡張されますが、本 skill のインタフェース (1 Spec 単位で動作) は変更不要です。
+Phase 5 の orchestrator skill 実装後は、同一 `parallel_group` 内の複数 Spec について writing-plan / spec-leader を並列起動できるよう拡張されますが、本 skill のインタフェース (1 Spec 単位で動作) は変更不要です。
 
 ### 8.3 他 Spec の Plan 参照 (2026-04-22 改修の核心)
 

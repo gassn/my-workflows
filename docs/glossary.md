@@ -63,7 +63,7 @@
 
 **Spec 名のケース**: ケバブケース (kebab-case) を使用します。
 
-**Spec 間の関係**: 複数 Spec を扱う場合、依存関係を `depends_on` フィールドに記述し、Phase 5 で実装される orchestrator agent が DAG 解決に利用します。
+**Spec 間の関係**: 複数 Spec を扱う場合、依存関係を `depends_on` フィールドに記述し、Phase 5 で実装される orchestrator skill が DAG 解決に利用します。
 
 ## 5. 階層用語
 

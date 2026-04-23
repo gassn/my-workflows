@@ -9,12 +9,12 @@ description: >
   「Spec の実行順序を整理したい」等で起動。
   Brainstorming で複数 Spec に分割した直後、または Spec ステージ完了後に必ず実行する
   本ワークフロー (docs/workflow.md) の DAG 構築ステージを担う。
-  Phase 5 で実装される orchestrator agent の唯一の入力データ生成器。
+  Phase 5 で実装される orchestrator skill の唯一の入力データ生成器。
 ---
 
 # Spec DAG Builder Skill
 
-複数の Spec (Brainstorming ノートまたは Spec ファイル) の依存関係を解析し、DAG (有向非巡回グラフ) を構築します。Phase 5 で実装される orchestrator agent が複数 specLeader を起動順序通りに呼び出すための入力データを生成することが主な役割です。
+複数の Spec (Brainstorming ノートまたは Spec ファイル) の依存関係を解析し、DAG (有向非巡回グラフ) を構築します。Phase 5 で実装される orchestrator skill が複数 specLeader を起動順序通りに呼び出すための入力データを生成することが主な役割です。
 
 **用語**: 「Project Phase」「Workflow Stage (ステージ)」「Release Phase」「Spec」の定義は `docs/glossary.md` を参照してください。
 
@@ -315,7 +315,7 @@ orchestrator は以下の順序で specLeader を起動します。
 
 ## 12. Phase 5 (orchestrator) との連携
 
-本 skill が生成する `specs/dag.md` と各 Spec の `depends_on` / `parallel_group` / `status` が、Phase 5 で実装される orchestrator agent の **唯一の入力データ** です。
+本 skill が生成する `specs/dag.md` と各 Spec の `depends_on` / `parallel_group` / `status` が、Phase 5 で実装される orchestrator skill の **唯一の入力データ** です。
 
 orchestrator は以下の流れで動作する想定です (本 skill の出力形式と整合する設計)。
 

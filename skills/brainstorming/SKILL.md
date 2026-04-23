@@ -223,7 +223,7 @@ status: brainstorming-complete
 
 ### 10.6 Phase 5 (orchestrator) への橋渡し
 
-本プロジェクトのワークフロー (`docs/workflow.md`) では、複数 Spec の並列実行は Phase 5 で実装される orchestrator agent が担当します。Phase 3 の時点では分割後の各 Spec を順次手動で進めることになりますが、Brainstorming ノート段階で依存関係 (`depends_on`) を明記しておくことで、Phase 5 の orchestrator がそのまま DAG 解決に利用できます。
+本プロジェクトのワークフロー (`docs/workflow.md`) では、複数 Spec の並列実行は Phase 5 で実装される orchestrator skill が担当します。Phase 3 の時点では分割後の各 Spec を順次手動で進めることになりますが、Brainstorming ノート段階で依存関係 (`depends_on`) を明記しておくことで、Phase 5 の orchestrator がそのまま DAG 解決に利用できます。
 
 未来の自動化を意識し、依存関係は必ず記述してください。
 
