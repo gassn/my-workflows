@@ -82,18 +82,19 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 
 ## Phase 5: orchestrator 追加 (複数 Spec 並列)
 
-複数 Spec を並列実行する orchestrator agent を追加します。Phase 3 で確定したインタフェースに沿って specLeader を呼び出し、specLeader 自体は改修不要にします。
+複数 Spec を並列実行する機構を追加します。Phase 3 で確定したインタフェースに沿って specLeader を呼び出し、specLeader 自体は改修不要にします。
 
-- [ ] **orchestrator agent** 実装 (複数 Spec の DAG 管理、specLeader 起動、merge 順序制御)
-- [ ] **investigator agent 役割拡張**: Plan ステージ専用 → Brainstorming + Plan 両ステージで使用 (brainstorming skill 内のコードベース精査ロジックを agent に委譲)
-- [ ] **DAG 管理**: Spec 間依存関係の定義と解決
-- [ ] **Agent Teams 多階層 subagent の動作検証**: orchestrator → specLeader → workers の 3 層が動作するか確認
-  - 動作しない場合: state ファイル経由の擬似並列方式に切り替え
-- [ ] **merge 順序制御**: 並列完了後の統合順序 (依存順 + コンフリクト解決)
-- [ ] **並列実行時のリソース上限**: 同時起動可能 specLeader 数の制限
-- [ ] **長時間タスクの可視化**: tmux + TUI ダッシュボード検討 (claude-scrum-team 参考)
+**重要な設計変更 (2026-04-23 Phase 5 バッチ 3 判明事項)**: Claude Code 公式仕様「Subagents cannot spawn their own subagents」により、当初計画の agent 3 階層 (orchestrator → spec-leader → workers) は動作不可。orchestrator は agent → skill に再設計し、main agent が本 skill を実行する 1 階層設計に変更しました。
 
-**完了条件**: 2 つ以上の Spec を並列入力して、orchestrator が specLeader を並列起動し、依存順に ship まで完走できること。
+- [x] **orchestrator skill** 実装 (2026-04-23 Phase 5 バッチ 3、`skills/orchestrator/SKILL.md`): 複数 Spec の DAG 管理、spec-leader 逐次起動、merge 順序制御、単一 Spec 時スキップ、再開モード。当初 agent 設計から skill に転換、main agent が orchestrator skill + spec-leader skill を兼任実行
+- [x] **investigator agent 役割拡張**: 2026-04-23 Phase 5 バッチ 1 実装 (`agents/investigator.md`、3 responsibility: codebase / other-plans / dependencies)。writing-plan / brainstorming から並列起動可能
+- [x] **DAG 管理**: spec-dag-builder + writing-plan + orchestrator skill で実現 (Phase 3 / Phase 5 複数 skill で分担)
+- [x] **Agent Teams 多階層 subagent の動作検証** (2026-04-23): 公式仕様で禁止と判明 → state ファイル経由 + 1 階層設計に切り替え済
+- [x] **merge 順序制御** (orchestrator skill §4.4): dependency-order / completion-order / manual の 3 方式、Phase 5 時点は dependency-order が実質稼働
+- [x] **並列実行時のリソース上限** (orchestrator skill §5): max_parallel=1 (main agent 逐次実行)、workers 並列は spec-leader に委譲、Phase 6 でマルチセッション並列化を検討
+- [ ] **長時間タスクの可視化**: tmux + TUI ダッシュボード検討 (claude-scrum-team 参考、Phase 6 実装予定)
+
+**完了条件**: 2 つ以上の Spec を入力して、orchestrator skill が spec-leader を逐次起動し、依存順に ship まで完走できること (並列は Phase 6 以降)。
 
 ## Phase 6: 統合改善ループ + 公開検討
 
