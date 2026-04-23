@@ -15,8 +15,22 @@ set -u
 
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+readonly SPEC_NAME_PATTERN='^[A-Za-z0-9._-]+$'
 SPEC_DIR="${DASHBOARD_SPEC_DIR:-${REPO_ROOT}/specs}"
+WORKTREES_DIR="${DASHBOARD_WORKTREES_DIR:-${REPO_ROOT}/worktrees}"
 POLL_SEC="${DASHBOARD_POLL_SEC:-1}"
+
+# validate_spec_name: Spec 名が allowlist に合致するか検証する (shell injection / path traversal 防止)
+# 引数: $1=spec-name
+# exit code: 0=OK, 1=invalid
+validate_spec_name() {
+  local name="$1"
+  if [[ ! "$name" =~ $SPEC_NAME_PATTERN ]]; then
+    echo "invalid spec name: '$name' (allowed: $SPEC_NAME_PATTERN)" >&2
+    return 1
+  fi
+  return 0
+}
 
 # print_usage: 使い方を stderr に書く
 print_usage() {
@@ -41,17 +55,17 @@ ensure_jq() {
 }
 
 # render_spec: 指定 Spec の現在状態を整形して stdout に書く
-# 引数: $1=spec-name
+# 引数: $1=spec-name (呼び出し元で validate_spec_name 済みの前提)
 render_spec() {
   local spec="$1"
   local progress_json="${SPEC_DIR}/${spec}.progress.json"
   local result_json="${SPEC_DIR}/${spec}.result.json"
-  local progress_md="${SPEC_DIR}/../worktrees/${spec}/progress.md"
+  local progress_md="${WORKTREES_DIR}/${spec}/progress.md"
 
   printf "=== %s  (%s) ===\n" "$spec" "$(date '+%Y-%m-%d %H:%M:%S')"
 
   if [[ ! -f "$progress_json" ]]; then
-    echo "progress 未生成、spec-leader が起動されていない可能性 (expected: $progress_json)" >&2
+    echo "progress 未生成、spec-leader が起動されていない可能性 (expected: $progress_json)"
     return 0
   fi
 
@@ -80,7 +94,9 @@ render_spec() {
 
   if [[ -f "$progress_md" ]]; then
     printf "\n-- ログ末尾 10 行 (%s) --\n" "progress.md"
-    tail -n 10 "$progress_md"
+    # Spec §3.2 「progress.md の `## ログ` セクションの末尾 10 行」に従い、
+    # awk で `## ログ` 見出しと次の `## ` 見出しの間を抽出してから tail
+    awk '/^## ログ/{flag=1; next} /^## /{flag=0} flag' "$progress_md" | tail -n 10
   fi
 }
 
@@ -98,6 +114,7 @@ main() {
   ensure_jq
 
   local spec="$1"
+  validate_spec_name "$spec" || exit 1
 
   if [[ "${DASHBOARD_PANE_ONESHOT:-0}" == "1" ]]; then
     render_spec "$spec"
