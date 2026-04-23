@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/my-workflows/hooks/pre-tool-use-tdd.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/my-workflows/hooks/stop-verify-before-completion.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

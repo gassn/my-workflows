@@ -66,10 +66,10 @@
 
 skill 単体では強制力が弱いため、hook で挙動を物理的に固定化します。
 
-- [ ] **SessionStart hook**: プロジェクト固有 skill / コンテキストの自動注入 (superpowers 方式参考)
-- [ ] **PreToolUse hook (Edit/Write)**: TDD 強制 (実装ファイル編集前にテスト存在を確認、なければブロック)
+- [x] **SessionStart hook** (部分): genshijin-without-docs のロード実装済 (`hooks/load-session-skills.sh`)、Phase 3 skill 群の追加は未
+- [x] **PreToolUse hook (Edit/Write)**: TDD 強制 (実装ファイル編集前にテスト存在を確認、なければ exit 2 でブロック)。2026-04-23 実装 (`hooks/pre-tool-use-tdd.sh`、worktree 内のみ強制、SKIP_TDD_HOOK=1 で bypass 可)
 - [ ] **PostToolUse hook (Edit/Write)**: テストファイル変更時の自動テスト実行
-- [ ] **Stop hook**: 完了宣言前の全検証強制 (test / lint / type)
+- [x] **Stop hook**: 完了宣言前の検証状態確認 (warning 運用、2026-04-23 実装: `hooks/stop-verify-before-completion.sh`、worktree 内で verify-report.md + verdict: pass 確認、Phase 4 後期でブロック化検討)
 - [ ] **WorktreeCreate hook**: worktree 初期化 (Spec ファイルコピー、ブランチ確認)
 - [ ] **WorktreeRemove hook**: worktree 削除前の未コミット警告
 - [ ] **TaskCompleted hook**: タスク完了時の進捗ファイル更新
