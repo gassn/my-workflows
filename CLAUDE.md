@@ -131,11 +131,19 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 | 4 | `security-reviewer` | セキュリティレビュー (OWASP Top 10 + 認証認可 + 入力検証) | receiving-code-review | 意図的脆弱性 6/6 検出 (100%)、Critical 3 / Major 3 / Minor 1、verdict: reject |
 | 5 | `cross-model-reviewer` | 外部モデル (Codex / GPT / Gemini) 経由の独立レビュー、Phase 3 は手動依頼運用 | cross-model-review | 手動依頼テンプレート生成、バイアス防止順序遵守、verdict: PENDING placeholder |
 
-**未実装 (3 agent)**:
+**Phase 5 agent (2026-04-23 時点、3/3 実装済、動作検証は Phase 5 バッチ 3 予定)**:
 
-- `investigator` — コードベース / 依存 / 類似実装調査 (Plan ステージ用、Phase 5 で Brainstorming にも拡張)
-- `spec-reviewer` — Spec の 3 観点レビュー agent 並列化 (spec-review skill の Phase 5 版)
-- `orchestrator` — 複数 Spec の DAG 管理、specLeader 起動、merge 順序制御 (Phase 5 で実装)
+| # | agent | 役割 | 連携元 |
+|---|---|---|---|
+| 6 | `orchestrator` | 複数 Spec の DAG 管理、spec-leader 並列起動、merge 順序制御、リソース上限管理 | main agent / ユーザー |
+| 7 | `investigator` | コードベース / 他 Spec Plan / 依存ライブラリの並列調査 (3 responsibility: codebase / other-plans / dependencies) | writing-plan / brainstorming |
+| 8 | `spec-reviewer` | spec-review skill の 3 観点 (completeness / feasibility / consistency) を並列独立判定 | spec-review skill |
+
+**Phase 5 設計方針**:
+
+- spec-leader は Phase 3 の入出力契約 (入力 spec_path / 出力 progress.json + result.json) を活用するため改修不要
+- Agent `isolation: "worktree"` 採用を Phase 5 バッチ 3 の動作検証で確認 (並列 spec-leader の git index 競合の物理排除)
+- Agent Teams 多階層 subagent (orchestrator → spec-leader → workers) の動作確認も Phase 5 の必須検証項目、動作不可なら state ファイル経由の擬似並列方式に切替
 
 **設計方針**: specLeader は Phase 5 の orchestrator から呼ばれる前提のインタフェース (入力: spec ファイルパス、出力: 進捗ファイル + 結果ファイルパス) を Phase 3 時点で確定し、Phase 5 で改修不要にします。
 
