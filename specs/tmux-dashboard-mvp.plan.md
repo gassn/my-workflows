@@ -1,8 +1,10 @@
 ---
 name: tmux-dashboard-mvp
 spec_path: specs/tmux-dashboard-mvp.md
-status: plan-complete
+status: plan-revised
 created: 2026-04-20
+revised: 2026-04-20
+review_iteration: 1
 ---
 
 # Plan: tmux-dashboard-mvp
@@ -102,6 +104,37 @@ T-1 (テスト先行) → T-2 (dashboard-pane 実装) → T-3 (dashboard 実装)
 ```
 
 **並列判定**: 全タスクが逐次依存 (TDD Red → Green の段階的進行) かつ T-4 が全ファイルを触るため、**並列化可能なタスクは存在しません**。`files_touched` が重複しない T-2 / T-3 については理屈上は並列化可能ですが、T-1 の fail/pass 遷移を順に確認しながら進めるほうが TDD の意図に合うため Phase 3 では逐次実行します。
+
+### 5.2.1 レビュー指摘対応タスク (iteration 1)
+
+receiving-code-review skill が worktree 側 `reviews/consolidated.md` (verdict_integrated: reject) を受けて追加したタスクです。統合判定は security-reviewer の Critical 1 件による reject で、Implement → Verify → Code Review ループの 1 回目 (§4 循環防止: 上限 3 回) です。
+
+- [ ] T-fix-1-1: Spec 名インジェクション対策 (見積: 40 分)
+  - 対応指摘: CR-security-Critical-1, CR-security-Minor-1, CR-code-Minor-4
+  - 修正内容: `tmux new-session` / `tmux split-window` に渡す引数を `printf %q` でエスケープ、加えて `collect_specs_auto` / `validate_explicit_specs` / `dashboard-pane.sh` 冒頭に Spec 名 allowlist `^[A-Za-z0-9._-]+$` を追加
+  - 追加テスト: 細工された Spec 名 (`evil';id;#` 等) が allowlist で弾かれる回帰ケースを `tests/test_dashboard.sh` に追加
+  - **files_touched**: `["tools/dashboard.sh", "tools/dashboard-pane.sh", "tests/test_dashboard.sh"]`
+
+- [ ] T-fix-1-2: Major + Minor 群対応 (見積: 40 分)
+  - 対応指摘: CR-code-Major-1〜3, CR-code-Minor-1/2/3/6/7/8, CR-security-Minor-3
+  - 修正内容:
+    - Major-1: `awk '/^## ログ/{flag=1; next} /^## /{flag=0} flag'` で `## ログ` 抽出後に tail
+    - Major-2: バージョン判定を `[[ -z || ! =~ || < 2 ]]` 直列に変更
+    - Major-3: progress.md パスを `REPO_ROOT` 基準に変更
+    - Minor-1: tmux 不在判定を 1 経路に DRY 化
+    - Minor-2: 9 Spec 超 warning を `launch_tmux` 冒頭に移動
+    - Minor-3: ループ内 `select-layout tiled` 削除
+    - Minor-6: `assert_case` docstring 修正
+    - Minor-7: progress 未生成メッセージを stdout に
+    - Minor-8: dashboard.sh に `ensure_jq` 追加
+    - security-Minor-3: test_dashboard.sh に REPO_ROOT / TMP_EMPTY のシングルクォート assertion
+  - 追加テスト: 既存テストケースで全通過を確認
+  - **files_touched**: `["tools/dashboard.sh", "tools/dashboard-pane.sh", "tests/test_dashboard.sh"]`
+
+対応見送り (consolidated.md §3 参照):
+
+- CR-security-Minor-2 (ANSI エスケープ素通し): Spec §4 の「ユーザー責任」記述にもとづき MVP スコープ外
+- CR-code-Minor-5 (attach 時メッセージ視認性): MVP 段階では window 名で状況把握可能
 
 ### 5.3 plan.meta.json
 

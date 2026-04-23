@@ -1,0 +1,58 @@
+{
+  "spec": "tmux-dashboard-mvp",
+  "spec_path": "specs/tmux-dashboard-mvp.md",
+  "review_path": "specs/tmux-dashboard-mvp.review.md",
+  "plan_path": "specs/tmux-dashboard-mvp.plan.md",
+  "started_at": "2026-04-20T00:00:00Z",
+  "updated_at": "2026-04-20T00:45:00Z",
+  "current_stage": "ship",
+  "review_iteration": 1,
+  "stages": {
+    "isolate": {
+      "status": "completed",
+      "started_at": "2026-04-20T00:00:00Z",
+      "completed_at": "2026-04-20T00:05:00Z",
+      "outputs": {
+        "worktree": "worktrees/tmux-dashboard-mvp",
+        "branch": "spec/tmux-dashboard-mvp",
+        "copied_files": [
+          "worktrees/tmux-dashboard-mvp/specs/tmux-dashboard-mvp.md",
+          "worktrees/tmux-dashboard-mvp/plans/tmux-dashboard-mvp.md",
+          "worktrees/tmux-dashboard-mvp/specs/tmux-dashboard-mvp.review.md"
+        ]
+      }
+    },
+    "implement": {
+      "status": "completed",
+      "started_at": "2026-04-20T00:05:00Z",
+      "completed_at": "2026-04-20T00:30:00Z",
+      "outputs": {
+        "commits": ["77c3b14", "a320d4e", "c5962b8", "018b97e", "b108c92"],
+        "tasks_completed": ["T-1", "T-2", "T-3", "T-4", "T-fix-1-1", "T-fix-1-2"],
+        "iterations": 2
+      }
+    },
+    "verify": {
+      "status": "completed",
+      "started_at": "2026-04-20T00:10:00Z",
+      "completed_at": "2026-04-20T00:35:00Z",
+      "outputs": {
+        "report": "worktrees/tmux-dashboard-mvp/verify-report.md",
+        "iteration_1": {"test_pass": 7, "test_fail": 0, "verdict": "pass"},
+        "iteration_2": {"test_pass": 10, "test_fail": 0, "verdict": "pass"}
+      }
+    },
+    "code_review": {
+      "status": "completed",
+      "started_at": "2026-04-20T00:15:00Z",
+      "completed_at": "2026-04-20T00:45:00Z",
+      "outputs": {
+        "reviews_dir": "worktrees/tmux-dashboard-mvp/reviews/",
+        "iteration_1": {"code": "needs-fix", "security": "reject", "cross_model": "PENDING", "integrated": "reject"},
+        "iteration_2": {"code": "pass", "security": "pass", "cross_model": "PENDING", "integrated": "pass"},
+        "consolidated": "worktrees/tmux-dashboard-mvp/reviews/consolidated.md"
+      }
+    },
+    "ship": {"status": "pending", "started_at": null, "completed_at": null, "outputs": null}
+  }
+}
