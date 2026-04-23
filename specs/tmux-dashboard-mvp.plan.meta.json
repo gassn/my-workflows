@@ -1,0 +1,14 @@
+{
+  "spec": "tmux-dashboard-mvp",
+  "plan_started_at": "2026-04-20T00:00:00Z",
+  "plan_completed_at": "2026-04-20T00:00:00Z",
+  "tasks_count": 4,
+  "parallel_groups_count": 0,
+  "files_touched_union": [
+    "tools/dashboard.sh",
+    "tools/dashboard-pane.sh",
+    "tests/test_dashboard.sh"
+  ],
+  "depends_on": [],
+  "references_other_plans": []
+}
