@@ -6,58 +6,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 このリポジトリは Claude Code 環境を個人用に最適化するための skills / agents / hooks / commands を段階的に構築するプロジェクトです。**コード実行基盤ではなく、Claude Code 自体を拡張する定義ファイル群** を管理します。ビルド・テストフレームワーク・パッケージマネージャは使用していません。
 
+## 現在の状態 (2026-04-23 時点)
+
+- **Phase 1 (基礎整備)**: ✅ 完了
+- **Phase 2 (ワークフロー骨子定義)**: ✅ 完了
+- **Phase 3 (skill + agent 実装 + eval)**: ✅ 完了 (12 skill / 7 agent、iter-3/4/5 統合完走 shipped)
+- **Phase 4 (hook 自動化)**: ✅ 完了 (5 hook 実装 + hookify 方針確定)
+- **Phase 5 (orchestrator + 並列実行)**: ✅ 実質完了 (orchestrator skill + 3 hook + 2 agent、Agent Teams 多階層禁止対応込み)
+- **Phase 6 (統合改善 + 公開検討)**: 🚧 着手中 (ドキュメント整備 / ドッグフーディング / 公開準備)
+
+詳細は各 Phase 完了レポート (`docs/phase3-completion.md` / `docs/phase4-completion.md` / `docs/phase5-completion.md`) と `ROADMAP.md` を参照してください。
+
 ## 設計思想 (README.md より)
 
 - **Fork しない**: 既存プラグインを直接改変せず、参考にしながら独自のワークフローを定義する
 - **段階的構築**: 大規模な仕組みを一度に目指さず、小さな skill から検証・改善サイクルを回す
 - **自分専用の最適化**: 一般向けフレームワークの冗長な指示を削ぎ、個人の開発習慣に合わせる
-- 自動化 (hook) は skill が十分に成熟してから導入する — 早すぎる自動化は挙動の制御を失わせる
+- **自動化は skill が成熟してから**: 早すぎる hook 化は挙動の制御を失わせる (Phase 4 で skill → hook の順に段階化)
+- **fallback 設計の予防投資**: 不確実な技術前提 (例: Agent Teams 多階層) には ROADMAP に fallback を明記、判明時の転換コストを最小化
 
 ## ディレクトリ構造
 
 ```
 ~/my-workflows/
-├── README.md                          # プロジェクト概要と設計思想
+├── README.md                          # プロジェクト概要と設計思想 (公開向け)
 ├── ROADMAP.md                         # Phase 1〜6 の段階的構築計画
+├── CLAUDE.md                          # 本ファイル (Claude Code へのガイダンス)
 ├── docs/
-│   ├── genshijin.md                   # genshijin モードの使い方メモ
-│   ├── frameworks.md                  # 参考フレームワーク一覧と取捨選択方針
 │   ├── workflow.md                    # 開発ワークフロー定義 (9 ステージ + 3 層階層)
-│   └── glossary.md                    # 用語集 (Project Phase / Workflow Stage / Release Phase / Spec)
-├── hooks/                             # 既存スクリプト (SessionStart 等、Phase 4 で本格統合予定)
-├── agents/                            # subagent 定義 (Phase 3 で 5 種実装、残 3 種は Phase 5)
-│   └── <agent-name>.md                # 単一 Markdown ファイル (frontmatter + プロンプト)
+│   ├── components-map.md              # skill + agent + hook の俯瞰 (Mermaid 図 + 使用ツール + worktree 4 系統比較)
+│   ├── glossary.md                    # 用語集 (Project Phase / Workflow Stage / Release Phase / Spec)
+│   ├── frameworks.md                  # 参考フレームワーク一覧と取捨選択方針
+│   ├── genshijin.md                   # genshijin モードの使い方メモ
+│   ├── hookify-setup.md               # hookify プラグイン導入ガイド (Phase 6 で有効化予定)
+│   ├── memory-operation.md            # Claude Code auto memory の本プロジェクト運用方針
+│   ├── phase3-completion.md           # Phase 3 完了レポート
+│   ├── phase4-completion.md           # Phase 4 完了レポート
+│   └── phase5-completion.md           # Phase 5 完了レポート
+├── hooks/                             # 9 スクリプト (Phase 4-5 実装 hook 8 種 + statusline)
+├── agents/                            # 7 agent (subagent 定義、frontmatter + プロンプト)
 └── skills/
     ├── <skill-name>/
     │   ├── SKILL.md                   # skill 本体 (frontmatter + 本文)
     │   └── evals/evals.json           # skill の評価セット (skill-creator 互換)
     └── <skill-name>-workspace/        # skill-creator が生成する eval 実行結果 (.gitignore で除外)
-        └── iteration-N/eval-X-.../
-            ├── with_skill/outputs/    # skill 有効時の出力
-            └── without_skill/outputs/ # skill 無効時の比較出力 (省略時あり)
 ```
 
-## skill の配置と有効化
+## skill / agent / hook の全体像
 
-開発はリポジトリ内で行い、`~/.claude/skills/` へシンボリックリンクで公開します:
+詳細は **`docs/components-map.md`** に集約されています (Mermaid 関係図 + 各 skill / agent / hook の説明 + 使用ツール / コマンドマトリクス + Phase 別進化)。
+
+簡略サマリ:
+
+- **skill 12 種**: Brainstorming → DAG 構築 → Spec → Spec Review → Plan → Isolate → Implement → Verify → Code Review → ship → Learn の 9 ステージカバー + orchestrator (複数 Spec 統括) + genshijin-without-docs (会話圧縮)
+- **agent 7 種**: spec-leader 配下の worker 5 種 (developer / verifier / code-reviewer / security-reviewer / cross-model-reviewer) + Phase 5 新設 2 種 (investigator / spec-reviewer)
+- **hook 8 種**: SessionStart / PreToolUse (TDD 強制) / PostToolUse (自動テスト) / Stop / InstructionsLoaded / WorktreeCreate / WorktreeRemove / TaskCompleted
+
+## skill / agent の配置と有効化
+
+開発はリポジトリ内で行い、`~/.claude/skills/` / `~/.claude/agents/` へシンボリックリンクで公開します:
 
 ```bash
 ln -sfn ~/my-workflows/skills/<skill-name> ~/.claude/skills/<skill-name>
-```
-
-`-workspace` ディレクトリは skill-creator の iteration 出力で、skill 本体ではないためリンク対象外です。
-
-## agent の配置と有効化
-
-agent も同様にリポジトリ内で開発し、`~/.claude/agents/` へシンボリックリンクで公開します:
-
-```bash
 ln -sfn ~/my-workflows/agents/<agent-name>.md ~/.claude/agents/<agent-name>.md
 ```
 
-各 agent は単一 Markdown ファイルで、frontmatter (`name` / `description`) と本文 (プロンプト定義) を持ちます。Phase 3 では spec-leader 配下の 5 種 (developer / verifier / code-reviewer / security-reviewer / cross-model-reviewer) を実装しました。残 3 種 (investigator / spec-reviewer / orchestrator) は Phase 5 で対応します。
+`-workspace` ディレクトリは skill-creator の iteration 出力で、skill 本体ではないためリンク対象外です (.gitignore で除外済)。
 
-## skill 作成時の構造
+### SKILL.md 作成時の frontmatter
 
 各 skill は最低限 `SKILL.md` を持ち、冒頭に以下の frontmatter を含みます:
 
@@ -65,7 +81,7 @@ ln -sfn ~/my-workflows/agents/<agent-name>.md ~/.claude/agents/<agent-name>.md
 ---
 name: <skill-name>
 description: >
-  起動条件・効果・用途を1〜3文で記述。トリガーフレーズや強度オプションもここに書く。
+  起動条件・効果・用途を 1〜3 文で記述。トリガーフレーズや強度オプションもここに書く。
 ---
 ```
 
@@ -75,7 +91,7 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 
 ## 参考フレームワークの優先順位 (docs/frameworks.md より)
 
-新規 skill を設計する際の参照順:
+新規 skill / agent を設計する際の参照順:
 
 1. **superpowers**: skill 核設計 (相互参照・SessionStart hook・pushy description)
 2. **spec-kit**: 仕様駆動のフェーズ設計 (Specify → Plan → Tasks)
@@ -84,77 +100,29 @@ eval セット (`evals/evals.json`) は skill-creator 互換形式で、`id` / `
 5. **gstack**: 役割分離の粒度
 6. **everything-claude-code**: 大規模化時の組織化
 
-## 既存 skill
-
-### genshijin-without-docs
-
-会話返答を圧縮 (トークン約75%削減) しつつ、**ドキュメント・コードコメント・コミットメッセージ・PR・.md ファイル** は通常の丁寧な日本語を維持する skill です。強度は `丁寧 / 通常 / 極限 (デフォルト)` の3段階。
-
-この skill を modify する際は `skills/genshijin-without-docs/evals/evals.json` の3ケース (会話返答 / README作成 / JSDocコメント) で回帰を確認してください。
-
-### Phase 3 ワークフロー skill (2026-04 時点、11/11 完了)
-
-ワークフロー (`docs/workflow.md`) に沿って実装中の skill 群です。Brainstorming → DAG 構築 → Spec → Spec Review → Isolate → Plan → Implement → Verify → Code Review → ship → Learn の 9 ステージをカバーします。
-
-**実装済 (11 skill)**:
-
-| # | skill | 役割 | eval 状態 |
-|---|---|---|---|
-| 1 | `brainstorming` | Spec 前の必須ヒアリング起点。Spec 分割提案 + コードベース精査 | iteration-2 完了 (with 100% / without 65% / Delta +35pt) |
-| 2 | `spec-dag-builder` | 複数 Spec の依存関係解析、DAG 構築 (段階的アップデート、循環検出) | iteration-1 完了 (5/5 通過) |
-| 3 | `writing-spec` | Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理、§13 レビュー指摘対応モード | iteration-1 完了 (with 100% / without 62.5% / Delta +37.5pt) |
-| 4 | `spec-review` | Spec 自動レビュー (完全性 / 実現可能性 / 整合性の 3 観点、main agent 順次実行 → Phase 5 で agent 3 並列化)、writing-spec 自動再起動 | iteration-1 + iteration-2 完了、全 5 ケース pass (100%)。3 verdict (pass/needs-fix/reject) 各 2 回、整合性コードベース走査 (意図的問題 7/7 検出)、再レビューサイクル (前回 Major 3 件解消確認) すべて動作確認済 |
-| 5 | `spec-leader` | Isolate → ship の 6 ステージ遷移制御。Phase 5 orchestrator 連携インタフェース確定済 | iteration-1 (3 ケース) + iteration-2 (2 ケース) 完了、全 5/5 pass (100%)。git worktree 実動作 / 再開モード / 前提条件違反 の全系統確認済 |
-| 6 | `writing-plan` | Plan ステージ: spec.md → plans/<spec-name>.md、技術設計 + タスク分解 (チェックボックス形式) | iteration-1 主要 3 ケース完了 (basic / existing / not-worktree すべて 100%、9/9 pass) |
-| 7 | `tdd-driver` | Implement ステージ: TDD 強制 (Red → Green → Refactor)、Phase 4 で PreToolUse hook 化予定 | iteration-1 完了 (basic / antipattern 2/2 pass) |
-| 8 | `verification-before-completion` | Verify ステージ: 完了宣言前の全検証 (test / lint / type / 手動 AC) 強制、Phase 4 で Stop hook 化予定 | iteration-1 完了 (basic / antipattern 2/2 pass) |
-| 9 | `receiving-code-review` | Code Review 差戻し対応: reviewer 指摘の集約 + Plan タスク追加 + 修正 loop (最大 3 回) | iteration-1 完了 (basic / antipattern 2/2 pass) |
-| 10 | `cross-model-review` | Codex / GPT / Gemini 等の独立モデルレビュー、Phase 3 は手動依頼テンプレート | iteration-1 完了 (basic / antipattern 2/2 pass) |
-| 11 | `learn` | ship 後の振り返り: 時間配分 / 手戻り / Keep / Problem / Try パッチ案生成 | iteration-1 完了 (basic / antipattern 2/2 pass) |
-
-**設計方針の一貫性**:
-
-- skill 間連携は自動起動 (writing-spec → spec-review → spec-leader → writing-plan → tdd-driver → verification → (Code Review reviewer 群 + cross-model-review) → receiving-code-review → ship → learn)
-- specLeader は Phase 5 orchestrator 連携インタフェース (入力 spec_path / 出力 progress.json + result.json) を確定済、Phase 5 で skill 改修不要
-- Phase 4 hook 化対応: tdd-driver / verification-before-completion の強制部分は hook 化予定だが skill インタフェースは変更なし
-- 下位 skill 未実装時の扱い: spec-leader §16 で blocked 状態を記録、全停止 + ユーザー相談 (Q3 確定)
-
-### Phase 3 agent (2026-04-21 時点、5/8 完了)
-
-**実装済 (5 agent、spec-leader 配下)** — iteration-1 単体動作確認完了 (5/5 agent pass、2026-04-21):
-
-| # | agent | 役割 | 連携 skill | iteration-1 結果 |
-|---|---|---|---|---|
-| 1 | `developer` | Plan タスク 1 件を TDD (Red→Green→Refactor) で実装 | tdd-driver | Python 電卓 add() で Red→Green→Refactor 完走、5/5 テスト pass |
-| 2 | `verifier` | 4 カテゴリ検証 (test / lint / type / 手動 AC) を実行 + verify-report 生成 | verification-before-completion | 仮想 login 機能で 4 カテゴリ verify-report 生成、verdict: pass |
-| 3 | `code-reviewer` | コード品質レビュー (可読性 / 設計 / 単純性 / 保守性) | receiving-code-review | 品質問題含む login.ts で Major 3 / Minor 4 検出、セキュリティ観点不侵犯 |
-| 4 | `security-reviewer` | セキュリティレビュー (OWASP Top 10 + 認証認可 + 入力検証) | receiving-code-review | 意図的脆弱性 6/6 検出 (100%)、Critical 3 / Major 3 / Minor 1、verdict: reject |
-| 5 | `cross-model-reviewer` | 外部モデル (Codex / GPT / Gemini) 経由の独立レビュー、Phase 3 は手動依頼運用 | cross-model-review | 手動依頼テンプレート生成、バイアス防止順序遵守、verdict: PENDING placeholder |
-
-**Phase 5 agent (2026-04-23 時点、2 agent 実装)**:
-
-| # | agent | 役割 | 連携元 |
-|---|---|---|---|
-| 6 | `investigator` | コードベース / 他 Spec Plan / 依存ライブラリの並列調査 (3 responsibility: codebase / other-plans / dependencies) | writing-plan / brainstorming |
-| 7 | `spec-reviewer` | spec-review skill の 3 観点 (completeness / feasibility / consistency) を並列独立判定 | spec-review skill |
-
-**orchestrator は agent → skill へ再設計** (Phase 5 バッチ 3 判明事項): Claude Code 公式仕様「Subagents cannot spawn their own subagents」により、orchestrator → spec-leader → workers の 3 階層が動作不可。代替として main agent が orchestrator skill を実行する 1 階層設計に変更 (下位 workers は Agent tool 経由で並列起動、1 階層のみ)。skill 実装は `skills/orchestrator/SKILL.md`。
-
-**Phase 5 設計方針**:
-
-- spec-leader は Phase 3 の入出力契約 (入力 spec_path / 出力 progress.json + result.json) を活用するため改修不要
-- Agent `isolation: "worktree"` は workers (developer / verifier / reviewer) レベルで採用検討、Phase 5 動作検証で確認
-- 多階層禁止の制約に準拠: main agent = orchestrator + spec-leader 兼任、workers のみ Agent 並列起動
-
-**設計方針**: specLeader は Phase 5 の orchestrator から呼ばれる前提のインタフェース (入力: spec ファイルパス、出力: 進捗ファイル + 結果ファイルパス) を Phase 3 時点で確定し、Phase 5 で改修不要にします。
-
-新しい skill を設計する際は `docs/workflow.md` でステージ位置を確認し、`docs/glossary.md` の用語定義に従ってください。
-
 ## ドキュメント記述のルール
 
-`.md` ファイルは genshijin-without-docs skill の対象外です。**常に通常の丁寧な日本語で記述** してください (「です/ます」体、完結した文章)。コードコメント・コミットメッセージ・PR本文も同様です。圧縮モードは会話返答のみに適用します。
+`.md` ファイルは `genshijin-without-docs` skill の対象外です。**常に通常の丁寧な日本語で記述** してください (「です/ます」体、完結した文章)。コードコメント・コミットメッセージ・PR 本文も同様です。圧縮モードは会話返答のみに適用します。
 
 ## Git 運用
 
-- main ブランチで直接作業しています (Phase 6 で公開を検討するまでブランチ戦略は未確立)
-- コミットメッセージは日本語で記述
+- **main ブランチで直接作業** しています (Phase 6 でブランチ戦略を整理予定)
+- コミットメッセージは**日本語**で記述
+- コミットメッセージは「タイトル行 + 本文」形式、本文で変更理由・影響範囲・検証結果を説明
+
+## Claude Code の worktree 採用方針
+
+本プロジェクトでは `git worktree add` (Bash) を主要手段として採用し、`EnterWorktree` / `Agent isolation:"worktree"` / `WorktreeCreate hook` は補助的・特定シナリオでの利用に限定します。判断基準と 4 系統比較は `docs/components-map.md §8.3.1` を参照してください。
+
+## memory 運用
+
+Claude Code の auto memory (`~/.claude/projects/.../memory/`) は本プロジェクトでは現状**未使用**。設計知識は docs/ / SKILL.md / ROADMAP に集約することで、将来セッション / 第三者にも参照可能にする方針です。詳細は `docs/memory-operation.md` を参照してください。
+
+## Phase 進捗の最新状況を知りたい時
+
+以下の順で参照:
+
+1. **ROADMAP.md**: 全 Phase の目標と完了項目
+2. **docs/phase<N>-completion.md** (N=3,4,5): 各 Phase の完了レポート (実装詳細 + 動作検証 + 知見)
+3. **docs/components-map.md**: skill / agent / hook の現在地
+4. **docs/workflow.md**: ワークフロー定義
