@@ -1,0 +1,15 @@
+{
+  "spec": "tmux-dashboard-mvp",
+  "verdict": "shipped-cross-model-pending",
+  "started_at": "2026-04-20T00:00:00Z",
+  "ended_at": "2026-04-20T00:55:00Z",
+  "final_commit": "9f77ab77e189cb4bcf64629d8d01b0a8f1aa41e1",
+  "stages_completed": ["isolate", "implement", "verify", "code_review", "ship"],
+  "stages_failed": [],
+  "stages_blocked": [],
+  "user_action_required": null,
+  "integrity_warnings": [],
+  "notes": "Phase 6 バッチ 2 (a) ドッグフーディング完走。iteration 2 で code-reviewer/security-reviewer 両 pass、cross-model-reviewer は Phase 3 placeholder のまま (Phase 5/6 で外部モデル連携実装時に再レビュー予定)。tmux 3.6a 実起動で AC-1/2/6 手動 pass 確認済。",
+  "review_iterations": 1,
+  "cross_model_pending_reason": "Phase 3 の cross-model-reviewer は外部モデル呼び出し未実装の placeholder 運用。code + security の 2 reviewer で品質は担保。"
+}

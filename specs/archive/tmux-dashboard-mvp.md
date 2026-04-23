@@ -1,6 +1,6 @@
 ---
 name: tmux-dashboard-mvp
-status: spec-complete
+status: archived
 created: 2026-04-23
 depends_on: []
 parallel_group: 1

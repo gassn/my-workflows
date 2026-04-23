@@ -1,7 +1,7 @@
 ---
 name: tmux-dashboard-mvp
 spec_path: specs/tmux-dashboard-mvp.md
-status: plan-revised
+status: archived
 created: 2026-04-20
 revised: 2026-04-20
 review_iteration: 1

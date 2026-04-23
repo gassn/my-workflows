@@ -1,10 +1,10 @@
 {
   "spec": "tmux-dashboard-mvp",
-  "spec_path": "specs/tmux-dashboard-mvp.md",
-  "review_path": "specs/tmux-dashboard-mvp.review.md",
-  "plan_path": "specs/tmux-dashboard-mvp.plan.md",
+  "spec_path": "specs/archive/tmux-dashboard-mvp.md",
+  "review_path": "specs/archive/tmux-dashboard-mvp.review.md",
+  "plan_path": "specs/archive/tmux-dashboard-mvp.plan.md",
   "started_at": "2026-04-20T00:00:00Z",
-  "updated_at": "2026-04-20T00:45:00Z",
+  "updated_at": "2026-04-20T00:55:00Z",
   "current_stage": "ship",
   "review_iteration": 1,
   "stages": {
@@ -14,12 +14,7 @@
       "completed_at": "2026-04-20T00:05:00Z",
       "outputs": {
         "worktree": "worktrees/tmux-dashboard-mvp",
-        "branch": "spec/tmux-dashboard-mvp",
-        "copied_files": [
-          "worktrees/tmux-dashboard-mvp/specs/tmux-dashboard-mvp.md",
-          "worktrees/tmux-dashboard-mvp/plans/tmux-dashboard-mvp.md",
-          "worktrees/tmux-dashboard-mvp/specs/tmux-dashboard-mvp.review.md"
-        ]
+        "branch": "spec/tmux-dashboard-mvp"
       }
     },
     "implement": {
@@ -37,7 +32,6 @@
       "started_at": "2026-04-20T00:10:00Z",
       "completed_at": "2026-04-20T00:35:00Z",
       "outputs": {
-        "report": "worktrees/tmux-dashboard-mvp/verify-report.md",
         "iteration_1": {"test_pass": 7, "test_fail": 0, "verdict": "pass"},
         "iteration_2": {"test_pass": 10, "test_fail": 0, "verdict": "pass"}
       }
@@ -47,12 +41,26 @@
       "started_at": "2026-04-20T00:15:00Z",
       "completed_at": "2026-04-20T00:45:00Z",
       "outputs": {
-        "reviews_dir": "worktrees/tmux-dashboard-mvp/reviews/",
         "iteration_1": {"code": "needs-fix", "security": "reject", "cross_model": "PENDING", "integrated": "reject"},
-        "iteration_2": {"code": "pass", "security": "pass", "cross_model": "PENDING", "integrated": "pass"},
-        "consolidated": "worktrees/tmux-dashboard-mvp/reviews/consolidated.md"
+        "iteration_2": {"code": "pass", "security": "pass", "cross_model": "PENDING", "integrated": "pass"}
       }
     },
-    "ship": {"status": "pending", "started_at": null, "completed_at": null, "outputs": null}
+    "ship": {
+      "status": "completed",
+      "started_at": "2026-04-20T00:45:00Z",
+      "completed_at": "2026-04-20T00:55:00Z",
+      "outputs": {
+        "merge_commit": "9f77ab77e189cb4bcf64629d8d01b0a8f1aa41e1",
+        "main_retest": "10/10 pass",
+        "archive_files": [
+          "specs/archive/tmux-dashboard-mvp.md",
+          "specs/archive/tmux-dashboard-mvp.plan.md",
+          "specs/archive/tmux-dashboard-mvp.plan.meta.json",
+          "specs/archive/tmux-dashboard-mvp.review.md",
+          "specs/archive/tmux-dashboard-mvp.dag.md",
+          "specs/archive/tmux-dashboard-mvp.consolidated.md"
+        ]
+      }
+    }
   }
 }
