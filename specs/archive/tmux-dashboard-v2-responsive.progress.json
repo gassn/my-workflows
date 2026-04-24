@@ -1,0 +1,72 @@
+{
+  "spec": "tmux-dashboard-v2-responsive",
+  "spec_path": "specs/archive/tmux-dashboard-v2-responsive.md",
+  "review_path": "specs/archive/tmux-dashboard-v2-responsive.review.md",
+  "plan_path": "specs/archive/tmux-dashboard-v2-responsive.plan.md",
+  "started_at": "2026-04-24T06:52:00Z",
+  "updated_at": "2026-04-24T07:12:00Z",
+  "current_stage": "ship",
+  "review_iteration": 0,
+  "stages": {
+    "isolate": {
+      "status": "completed",
+      "started_at": "2026-04-24T06:52:00Z",
+      "completed_at": "2026-04-24T06:52:00Z",
+      "outputs": {
+        "worktree": "worktrees/tmux-dashboard-v2-responsive",
+        "branch": "spec/tmux-dashboard-v2-responsive"
+      }
+    },
+    "implement": {
+      "status": "completed",
+      "started_at": "2026-04-24T06:52:00Z",
+      "completed_at": "2026-04-24T07:00:00Z",
+      "outputs": {
+        "tasks_completed": ["T-1", "T-2", "T-3", "T-4"],
+        "commits": ["288974f", "9870190"]
+      }
+    },
+    "verify": {
+      "status": "completed",
+      "started_at": "2026-04-24T07:00:00Z",
+      "completed_at": "2026-04-24T07:05:00Z",
+      "outputs": {
+        "test_pass": 20,
+        "test_fail": 0,
+        "verdict": "pass",
+        "manual_checked_ac": ["AC-1", "AC-2", "AC-3"]
+      }
+    },
+    "code_review": {
+      "status": "completed",
+      "started_at": "2026-04-24T07:05:00Z",
+      "completed_at": "2026-04-24T07:10:00Z",
+      "outputs": {
+        "code": "pass",
+        "security": "pass",
+        "cross_model": "PENDING",
+        "integrated": "pass",
+        "iteration": 0,
+        "minor_addressed": ["CR-code-Minor-1", "CR-code-Minor-3"],
+        "minor_deferred": ["CR-code-Minor-2", "CR-security-Minor-1"]
+      }
+    },
+    "ship": {
+      "status": "completed",
+      "started_at": "2026-04-24T07:10:00Z",
+      "completed_at": "2026-04-24T07:12:00Z",
+      "outputs": {
+        "merge_commit": "0afb548d503e76102d716b66a2fbf0e96fc585db",
+        "main_retest": "20/20 pass",
+        "archive_files": [
+          "specs/archive/tmux-dashboard-v2-responsive.md",
+          "specs/archive/tmux-dashboard-v2-responsive.plan.md",
+          "specs/archive/tmux-dashboard-v2-responsive.plan.meta.json",
+          "specs/archive/tmux-dashboard-v2-responsive.review.md",
+          "specs/archive/tmux-dashboard-v2-responsive.dag.md",
+          "specs/archive/tmux-dashboard-v2-responsive.consolidated.md"
+        ]
+      }
+    }
+  }
+}
