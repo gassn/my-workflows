@@ -166,6 +166,38 @@ assert_case "T-test-10c: DASHBOARD_FAKE_COLS=0 (0 以下) で fallback → wide"
   "DASHBOARD_FAKE_COLS=0 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1" \
   0 "stage +status +started_at"
 
+# --- T-test-11: ANSI カラー対応 (dashboard-color Spec) ---
+# テストハーネス自体が bash -c パイプ経由で TTY false のため、
+# 明示的に script コマンドや DASHBOARD_FORCE_TTY で擬似しない限り
+# print_color は NO_COLOR 経路を通る。ここではその経路で ANSI 不在を確認する。
+
+# T-test-11a: DASHBOARD_NO_COLOR=1 で ANSI エスケープなし
+assert_case "T-test-11a: DASHBOARD_NO_COLOR=1 で ANSI 不在" \
+  "DASHBOARD_NO_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -cE $'\\x1b\\[' ; [[ \$? -eq 1 ]]" \
+  0 ""
+
+# T-test-11b: NO_COLOR=1 (業界標準) でも ANSI 不在
+assert_case "T-test-11b: NO_COLOR=1 (業界標準) で ANSI 不在" \
+  "NO_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -cE $'\\x1b\\[' ; [[ \$? -eq 1 ]]" \
+  0 ""
+
+# T-test-11c: パイプ経由 (非 TTY) で自動無効化される (既存 T-test-9a と同一条件)
+assert_case "T-test-11c: 非 TTY で自動 NO_COLOR" \
+  "DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -cE $'\\x1b\\[3[0-9]m' ; [[ \$? -eq 1 ]]" \
+  0 ""
+
+# T-test-11d: wide モード status カラムの visible-width 12 維持 (NO_COLOR 時でパディング確認)
+# "completed" (9 文字) + 空白 3 = 12 文字で next column の started_at が開始
+assert_case "T-test-11d: wide モード 12 文字幅パディング保持" \
+  "DASHBOARD_NO_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -E 'completed +2026' | head -1" \
+  0 "completed    2026"
+
+# T-test-11e: DASHBOARD_FORCE_COLOR=1 で TTY 判定 bypass → ANSI 有り (実装検証用)
+# 実装前は print_color 関数が存在しないため ANSI が出ず fail、実装後は pass
+assert_case "T-test-11e: DASHBOARD_FORCE_COLOR=1 で ANSI 出力" \
+  "DASHBOARD_FORCE_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -cE $'\\x1b\\[3[0-9]m'" \
+  0 "^[1-9]"
+
 # --- 結果出力 ---
 echo ""
 echo "=== test_dashboard.sh 結果 ==="

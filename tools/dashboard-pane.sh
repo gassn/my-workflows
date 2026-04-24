@@ -26,6 +26,68 @@ SPEC_DIR="${DASHBOARD_SPEC_DIR:-${REPO_ROOT}/specs}"
 WORKTREES_DIR="${DASHBOARD_WORKTREES_DIR:-${REPO_ROOT}/worktrees}"
 POLL_SEC="${DASHBOARD_POLL_SEC:-1}"
 
+# ANSI カラー定数 (dashboard-color Spec §3.1.1)
+# 後続 dashboard-color-themes Spec で load_theme により上書き可能
+COLOR_COMPLETED=$'\e[32m'
+COLOR_IN_PROGRESS=$'\e[33m'
+COLOR_PENDING=''
+COLOR_FAILED=$'\e[31m'
+COLOR_BLOCKED=$'\e[35m'
+COLOR_SHIPPED=$'\e[36m'
+COLOR_ABORTED=$'\e[31m'
+COLOR_RESET=$'\e[0m'
+
+# _is_color_enabled: カラー出力の有効性を判定
+# 優先度: DASHBOARD_FORCE_COLOR=1 (強制 ON、test 用) > NO_COLOR / DASHBOARD_NO_COLOR (強制 OFF) > [[ -t 1 ]] (TTY 判定)
+# exit 0=有効、1=無効
+_is_color_enabled() {
+  [[ "${DASHBOARD_FORCE_COLOR:-0}" == "1" ]] && return 0
+  [[ -n "${NO_COLOR:-}" ]] && return 1
+  [[ "${DASHBOARD_NO_COLOR:-0}" == "1" ]] && return 1
+  [[ -t 1 ]] && return 0
+  return 1
+}
+
+# _color_for_status: status 名 → 対応する $COLOR_* 変数の値を stdout に出力
+# shipped-* / aborted-* は prefix 一致で shipped / aborted の色を返す
+_color_for_status() {
+  case "$1" in
+    completed) printf '%s' "$COLOR_COMPLETED" ;;
+    in_progress) printf '%s' "$COLOR_IN_PROGRESS" ;;
+    pending) printf '%s' "$COLOR_PENDING" ;;
+    failed) printf '%s' "$COLOR_FAILED" ;;
+    blocked) printf '%s' "$COLOR_BLOCKED" ;;
+    shipped|shipped-*) printf '%s' "$COLOR_SHIPPED" ;;
+    aborted|aborted-*) printf '%s' "$COLOR_ABORTED" ;;
+    *) printf '%s' "" ;;
+  esac
+}
+
+# print_color: status を ANSI カラー付き + 事前パディングで stdout に出力 (末尾改行なし)
+# 引数: $1=status、$2=visible-width (optional、省略時はパディングなし)
+# カラー無効時はパディング済 status のみ出力
+print_color() {
+  local status="$1"
+  local width="${2:-0}"
+
+  local padded="$status"
+  if [[ "$width" =~ ^[0-9]+$ ]] && [[ "$width" -gt 0 ]]; then
+    printf -v padded "%-${width}s" "$status"
+  fi
+
+  if _is_color_enabled; then
+    local color_on
+    color_on="$(_color_for_status "$status")"
+    if [[ -n "$color_on" ]]; then
+      printf '%s%s%s' "$color_on" "$padded" "$COLOR_RESET"
+    else
+      printf '%s' "$padded"
+    fi
+  else
+    printf '%s' "$padded"
+  fi
+}
+
 # validate_spec_name: Spec 名が allowlist に合致するか検証する (shell injection / path traversal 防止)
 # 引数: $1=spec-name
 # exit code: 0=OK, 1=invalid
@@ -99,7 +161,8 @@ render_stages_wide() {
     | [.key, (.value.status // "-"), (.value.started_at // "-"), (.value.completed_at // "-")]
     | @tsv
   ' "$progress_json" 2>/dev/null | while IFS=$'\t' read -r stage status started completed; do
-    printf "%-12s %-12s %-24s %-24s\n" "$stage" "$status" "$started" "$completed"
+    # status は print_color で事前パディング + ANSI (visible-width 12)、wide の他カラムは通常 printf
+    printf "%-12s %s %-24s %-24s\n" "$stage" "$(print_color "$status" 12)" "$started" "$completed"
   done
 }
 
@@ -115,7 +178,8 @@ render_stages_narrow() {
     | [.key, (.value.status // "-")]
     | @tsv
   ' "$progress_json" 2>/dev/null | while IFS=$'\t' read -r stage status; do
-    printf "%-12s %s\n" "$stage" "$status"
+    # narrow でも status に色を付ける (visible-width 指定なし、1 行末尾なので列崩れしない)
+    printf "%-12s %s\n" "$stage" "$(print_color "$status")"
   done
 }
 
@@ -124,7 +188,10 @@ render_stages_narrow() {
 # 引数: $1=progress_json (path)
 render_stages_compact() {
   local progress_json="$1"
-  jq -r '.stages | to_entries[] | "\(.key)=\(.value.status // "-")"' "$progress_json" 2>/dev/null
+  jq -r '.stages | to_entries[] | [.key, (.value.status // "-")] | @tsv' "$progress_json" 2>/dev/null \
+    | while IFS=$'\t' read -r stage status; do
+        printf "%s=%s\n" "$stage" "$(print_color "$status")"
+      done
 }
 
 # render_spec: 指定 Spec の現在状態を整形して stdout に書く
