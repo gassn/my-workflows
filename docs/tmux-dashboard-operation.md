@@ -62,6 +62,9 @@ tmux select-layout -t my-workflows-dashboard:dashboard tiled
 | `DASHBOARD_FAKE_NO_TMUX` | `1` のとき tmux 未インストールを擬似再現 (test 用) | 未設定 |
 | `DASHBOARD_PANE_ONESHOT` | `1` のとき dashboard-pane が 1 回描画して exit (test 用) | 未設定 |
 | `DASHBOARD_FAKE_COLS` | pane 幅を正整数で強制 (test 用、v2-responsive 追加) | 未設定 |
+| `NO_COLOR` | 任意の非空値で ANSI カラー無効化 (業界標準、dashboard-color 追加) | 未設定 |
+| `DASHBOARD_NO_COLOR` | `1` で ANSI カラー無効化 (本プロジェクト固有、dashboard-color 追加) | 未設定 |
+| `DASHBOARD_FORCE_COLOR` | `1` で TTY 判定を bypass してカラー強制 ON (test 用、dashboard-color 追加) | 未設定 |
 
 別ディレクトリから dashboard を動かしたいケースでは `DASHBOARD_SPEC_DIR` / `DASHBOARD_WORKTREES_DIR` を両方指定してください。tmux が既に別 server で起動している場合、環境変数が server に引き継がれないため、`tmux -L <socket名>` で別 socket を使うか、`-e KEY=VALUE` flag で明示的に環境を渡す必要があります (下記 §7.3 参照)。
 
@@ -83,6 +86,32 @@ tmux select-layout -t my-workflows-dashboard:dashboard tiled
 compact モードおよび narrow モードで 1 行が pane 幅を超える場合 (長い status / 長いステージ名) は、ターミナルの折返しに委ねて truncate は行いません。詳細は `specs/archive/tmux-dashboard-v2-responsive.md` §3.5 を参照してください。
 
 9 pane 超 (§5) で狭くなる懸念は、compact モードが自動で選ばれることで stages 状態の把握が可能になります。ただし時刻情報は失われるため、進行時間を確認したい場合は pane を手動で拡大 (tmux `Ctrl-b z` で zoom) して wide モードに切り替えてください。
+
+### 3.2 ANSI カラー (dashboard-color)
+
+3 モードすべてで status に応じた ANSI カラーが付きます。`print_color` ヘルパーが pane ごとに 1 秒 poll で呼ばれ、status セルを色付きで出力します。
+
+| status | 色 | 代表例 |
+|---|---|---|
+| `completed` | 緑 (32) | isolate ステージ通過済 |
+| `in_progress` | 黄 (33) | 現在作業中のステージ |
+| `pending` | デフォルト | 未開始 |
+| `failed` | 赤 (31) | エラーで停止 |
+| `blocked` | マゼンタ (35) | 下位 skill 未実装で待機 |
+| `shipped` / `shipped-*` | シアン (36) | result.json の最終状態 |
+| `aborted` / `aborted-*` | 赤 (31) | result.json のアボート状態 |
+
+**カラーの有効 / 無効**:
+
+- 自動: 標準出力が TTY のとき ON、パイプ / リダイレクト時は OFF
+- 強制 OFF: `NO_COLOR=1` または `DASHBOARD_NO_COLOR=1` を指定 (業界標準 `NO_COLOR` + 本プロジェクト固有変数の両方を受け付け)
+- 強制 ON: `DASHBOARD_FORCE_COLOR=1` (test 環境や tmux server 経由で TTY が正しく引き継がれない場合の救済)
+
+優先度は **FORCE_COLOR > NO_COLOR > DASHBOARD_NO_COLOR > TTY 判定** です。
+
+**列アライメント**:
+
+wide モードの status カラム (12 文字幅) は `print_color <status> 12` で**事前パディング後に ANSI を巻く**ため、後続の `started_at` / `completed_at` カラムの開始列位置は wide shipped 版と同一です (ANSI エスケープコードがバイト幅計算に影響せず、視覚幅 12 を保つ)。
 
 ## 4. Spec 名の制約 (セキュリティ)
 
