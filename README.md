@@ -159,7 +159,7 @@ hook は `.claude/settings.json` (project local、commit 済) で登録されて
 
 ## ライセンス
 
-未選定 (Phase 6 で検討中)。
+[MIT License](LICENSE) で公開しています。商用利用 / 改変 / 再配布すべて自由です。`LICENSE` ファイル内の著作権表示とライセンス文を保持することのみ条件としてください。
 
 ## 貢献 / フォーク
 

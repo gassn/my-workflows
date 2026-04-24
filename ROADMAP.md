@@ -106,7 +106,7 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 - [x] **memory 運用の最適化**: 記憶すべき情報とそうでない情報の線引き整備 (2026-04-23 バッチ 1 完了、`docs/memory-operation.md` 新設で方針明文化)
 - [x] **プロジェクト全体のドキュメント整備** (2026-04-23 バッチ 1 で README / CLAUDE.md 更新、Phase 3-5 完了レポート 3 点セット + components-map + hookify-setup + memory-operation で体系完成)
 - [ ] **各 skill の利用例とベストプラクティス集**
-- [ ] **ライセンス選定**
+- [x] **ライセンス選定** (2026-04-24 MIT 採択): `LICENSE` ファイル作成、README.md に明示。MIT 選定理由は「最も短文かつ商用/改変/再配布すべて自由で採用ハードル最低」「Claude Code 関連 OSS でも最多の採用実績」
 - [ ] **GitHub への公開** (任意)
 - [x] **Agent Teams 機能の有効化** (2026-04-23 設定): user settings の env セクションに `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 追加 (Claude Code v2.1.32 以上、本プロジェクトは v2.1.118 で確認)。subagents は Agent Teams 無効時も利用可のため Phase 3-5 成果物への影響なし。詳細は `docs/phase5-completion.md §0` 参照
 
