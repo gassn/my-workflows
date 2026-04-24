@@ -198,6 +198,28 @@ assert_case "T-test-11e: DASHBOARD_FORCE_COLOR=1 で ANSI 出力" \
   "DASHBOARD_FORCE_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -cE $'\\x1b\\[3[0-9]m'" \
   0 "^[1-9]"
 
+# --- T-test-12: テーマ切替 (dashboard-color-themes Spec) ---
+
+assert_case "T-test-12a: DASHBOARD_THEME 未指定 (default) で 32 番色" \
+  "DASHBOARD_FORCE_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -cE $'\\x1b\\[32m'" \
+  0 "^[1-9]"
+
+assert_case "T-test-12b: DASHBOARD_THEME=solarized-dark で 92 番色" \
+  "DASHBOARD_THEME=solarized-dark DASHBOARD_FORCE_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -cE $'\\x1b\\[92m'" \
+  0 "^[1-9]"
+
+assert_case "T-test-12c: DASHBOARD_THEME=monokai で 1;32 (bold 修飾)" \
+  "DASHBOARD_THEME=monokai DASHBOARD_FORCE_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -cE $'\\x1b\\[1;32m'" \
+  0 "^[1-9]"
+
+assert_case "T-test-12d: 不存在テーマで default フォールバック" \
+  "DASHBOARD_THEME=nonexistent DASHBOARD_FORCE_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1" \
+  0 "(theme file not found|fallback)"
+
+assert_case "T-test-12e: path traversal theme 名で allowlist 違反拒否" \
+  "DASHBOARD_THEME='../evil' DASHBOARD_FORCE_COLOR=1 DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1" \
+  0 "invalid theme name"
+
 # --- 結果出力 ---
 echo ""
 echo "=== test_dashboard.sh 結果 ==="
