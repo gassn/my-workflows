@@ -100,7 +100,7 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 
 ワークフロー全体の継続的改善とプロジェクト公開を検討します。
 
-- [~] **全フェーズの統合テスト**: Phase 6 バッチ 2 (a) `tmux-dashboard-mvp` (2026-04-20 shipped-cross-model-pending) + バッチ 2 (b) `tmux-dashboard-v2-responsive` (2026-04-24 shipped-cross-model-pending、initial pass / iteration 0、所要 20 分) の 2 件完走。次サイクル候補は複数 Spec 並列実行検証 (Agent Teams 実効検証)
+- [x] **全フェーズの統合テスト**: ドッグフーディング 4 Spec 完走。バッチ 2 (a) `tmux-dashboard-mvp` (1 loop) / (b) `tmux-dashboard-v2-responsive` (initial pass) / (c) `dashboard-color` + `dashboard-color-themes` (2 Spec 依存あり、3 連続 initial pass)。複数 Spec DAG 順起動 + archive plan.md の worktree 参照経路 + spec-reviewer 2 並列動作 + writing-plan 連続実測の 6 検証項目すべて成立。詳細は `specs/archive/batch-2c-orchestrator.learn.md` 参照
 - [~] **skill-creator による各 skill の eval iteration**: 2026-04-24 時点で記述ベース実証完了 (spec-leader iter-5 / writing-plan iter-5 / learn iter-2 の 3 skill で Try 5.1 / 5.3 / 5.4 / 5.5 の改修効果を SKILL.md 反映整合性として検証済、docs/phase6-progress.md §4 参照)。LLM 再実行による定量 Delta 測定 (without_skill vs with_skill の出力比較) は Phase 6 バッチ 3 以降の専用セッションで実施予定
 - [x] **CLAUDE.md の体系化**: プロジェクト横断の共通ルールと個別ルールの分離 (2026-04-23 バッチ 1 完了、160→128 行スリム化、skill/agent 詳細を components-map に委任)
 - [x] **memory 運用の最適化**: 記憶すべき情報とそうでない情報の線引き整備 (2026-04-23 バッチ 1 完了、`docs/memory-operation.md` 新設で方針明文化)
