@@ -49,10 +49,24 @@ main agent が本 orchestrator skill を起動
 - 「orchestration 起動」「orchestrator 起動」
 - 「全 Spec を順番に実装して」「DAG 順に ship して」
 - 「<spec A> と <spec B> をまとめて実装して」
+- 「複数 Spec 並列実行して」「依存 DAG 順に回して」 (2026-04-24 Try 6.3 追加)
 
 ### 2.3 単一 Spec 時のスキップ
 
 単一 Spec (dag.md の specs 配列が 1 要素) の場合は本 skill を経由せず、main agent が直接 spec-leader を実行してください。本 skill の付加価値は複数 Spec 時に発揮されます。
+
+### 2.4 起動時の必須アクション (2026-04-24 Phase 6 バッチ 2 (c) learn Try 6.3 改修)
+
+本 skill を起動したら、main agent は **必ず以下のいずれかを実施** してください:
+
+1. **本 skill の SKILL.md を Read** し、§3 前提条件チェック → §4 処理手順 → §5 リソース上限 → §9 アンチパターンを順に確認する
+2. 過去に本 skill を Read 済でメモリ上にある場合は、最低でも §4.1 DAG 読み込みと並列計画 / §4.2 グループ単位の実行 / §7 失敗時の対応 を暗黙に辿る
+
+「main agent が暗黙に orchestrator の動きを模倣する」運用は **避ける** こと。Phase 6 バッチ 2 (c) で実運用した結果、skill 本文と実運用の整合性が検証不能になる問題が発生しました (learn §5.2)。本 skill を Read した上で手順に従うことで:
+
+- skill の記述内容が実運用で常に最新化される (乖離を検出可能)
+- 複数 Spec 処理時の抜け漏れ (前提条件チェック / merge 順序 / リソース上限 / 失敗時の対応) を機械的に防止
+- Phase 6 以降の skill 改修が実運用にフィードバックされる
 
 ## 3. 前提条件の確認
 
