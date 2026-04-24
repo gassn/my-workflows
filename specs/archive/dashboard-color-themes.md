@@ -1,6 +1,6 @@
 ---
 name: dashboard-color-themes
-status: spec-complete
+status: archived
 created: 2026-04-24
 depends_on: [dashboard-color]
 parallel_group: 2

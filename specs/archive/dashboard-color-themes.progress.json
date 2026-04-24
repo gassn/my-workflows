@@ -1,0 +1,15 @@
+{
+  "spec": "dashboard-color-themes",
+  "spec_path": "specs/archive/dashboard-color-themes.md",
+  "started_at": "2026-04-24T07:56:00Z",
+  "updated_at": "2026-04-24T08:14:00Z",
+  "current_stage": "ship",
+  "review_iteration": 0,
+  "stages": {
+    "isolate": {"status": "completed"},
+    "implement": {"status": "completed", "outputs": {"tasks_completed": ["T-1", "T-2", "T-3", "T-4"], "other_plans_referenced": ["specs/archive/dashboard-color.plan.md"]}},
+    "verify": {"status": "completed", "outputs": {"test_pass": 30}},
+    "code_review": {"status": "completed", "outputs": {"code": "pass", "security": "pass", "cross_model": "PENDING", "integrated": "pass", "iteration": 0}},
+    "ship": {"status": "completed", "outputs": {"merge_commit": "03149dd96aa142869abf0ee7df511109c2e7cbd5", "main_retest": "30/30 pass"}}
+  }
+}

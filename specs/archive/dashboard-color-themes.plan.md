@@ -1,7 +1,7 @@
 ---
 name: dashboard-color-themes
 spec_path: specs/dashboard-color-themes.md
-status: plan-complete
+status: archived
 created: 2026-04-24
 references_other_plans:
   - specs/dashboard-color.plan.md
