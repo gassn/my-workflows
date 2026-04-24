@@ -1,0 +1,10 @@
+{
+  "spec": "dashboard-color",
+  "verdict": "shipped-cross-model-pending",
+  "started_at": "2026-04-24T07:34:40Z",
+  "ended_at": "2026-04-24T07:55:00Z",
+  "final_commit": "9f93c6ac87521f8ac8d12c7b0658dcbd4cf67fbd",
+  "stages_completed": ["isolate", "implement", "verify", "code_review", "ship"],
+  "review_iterations": 0,
+  "notes": "Phase 6 バッチ 2 (c) 先行 Spec、initial pass (iteration 0)。20 分で完走"
+}

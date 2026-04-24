@@ -1,0 +1,16 @@
+{
+  "spec": "dashboard-color",
+  "spec_path": "specs/archive/dashboard-color.md",
+  "plan_path": "specs/archive/dashboard-color.plan.md",
+  "started_at": "2026-04-24T07:34:40Z",
+  "updated_at": "2026-04-24T07:55:00Z",
+  "current_stage": "ship",
+  "review_iteration": 0,
+  "stages": {
+    "isolate": {"status": "completed", "started_at": "2026-04-24T07:44:35Z", "completed_at": "2026-04-24T07:44:40Z"},
+    "implement": {"status": "completed", "started_at": "2026-04-24T07:44:40Z", "completed_at": "2026-04-24T07:48:00Z"},
+    "verify": {"status": "completed", "started_at": "2026-04-24T07:48:00Z", "completed_at": "2026-04-24T07:49:00Z", "outputs": {"test_pass": 25}},
+    "code_review": {"status": "completed", "started_at": "2026-04-24T07:49:00Z", "completed_at": "2026-04-24T07:52:00Z", "outputs": {"code": "pass", "security": "pass", "cross_model": "PENDING", "integrated": "pass", "iteration": 0}},
+    "ship": {"status": "completed", "started_at": "2026-04-24T07:52:00Z", "completed_at": "2026-04-24T07:55:00Z", "outputs": {"merge_commit": "9f93c6ac87521f8ac8d12c7b0658dcbd4cf67fbd", "main_retest": "25/25 pass"}}
+  }
+}

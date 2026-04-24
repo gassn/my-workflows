@@ -1,6 +1,6 @@
 ---
 name: dashboard-color
-status: spec-complete
+status: archived
 created: 2026-04-24
 depends_on: []
 parallel_group: 1

@@ -1,7 +1,7 @@
 ---
 name: dashboard-color
 spec_path: specs/dashboard-color.md
-status: plan-complete
+status: archived
 created: 2026-04-24
 ---
 
