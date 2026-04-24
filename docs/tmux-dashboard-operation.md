@@ -80,7 +80,7 @@ tmux select-layout -t my-workflows-dashboard:dashboard tiled
 | narrow | 40-59 カラム | 2 列テーブル (`stage / status`)、時刻は省略 |
 | compact | 40 カラム未満 | 1 列 (`stage=status` 形式の key-value 列挙)、時刻省略 |
 
-compact モードで 1 行が pane 幅を超える場合 (長い status など) は、ターミナルの折返しに委ねて truncate は行いません。詳細は `specs/archive/tmux-dashboard-v2-responsive.md` §3.5 を参照してください。
+compact モードおよび narrow モードで 1 行が pane 幅を超える場合 (長い status / 長いステージ名) は、ターミナルの折返しに委ねて truncate は行いません。詳細は `specs/archive/tmux-dashboard-v2-responsive.md` §3.5 を参照してください。
 
 9 pane 超 (§5) で狭くなる懸念は、compact モードが自動で選ばれることで stages 状態の把握が可能になります。ただし時刻情報は失われるため、進行時間を確認したい場合は pane を手動で拡大 (tmux `Ctrl-b z` で zoom) して wide モードに切り替えてください。
 

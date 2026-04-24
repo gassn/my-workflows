@@ -161,6 +161,11 @@ assert_case "T-test-10b: DASHBOARD_FAKE_COLS=abc (非数値) で fallback → wi
   "DASHBOARD_FAKE_COLS=abc DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1" \
   0 "stage +status +started_at"
 
+# T-test-10c: 0 以下 (0) の場合も fallback で wide に落ちる (AC-5 後半)
+assert_case "T-test-10c: DASHBOARD_FAKE_COLS=0 (0 以下) で fallback → wide" \
+  "DASHBOARD_FAKE_COLS=0 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1" \
+  0 "stage +status +started_at"
+
 # --- 結果出力 ---
 echo ""
 echo "=== test_dashboard.sh 結果 ==="
