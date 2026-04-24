@@ -1,8 +1,27 @@
 # ~/.claude/settings.json への閲覧用シンボリックリンク (実体は dotfiles リポジトリで管理)
 claude-settings.json
 
+# Claude Code 個人ローカル設定 (個人パス / 実験権限など含むため公開しない)
+.claude/settings.local.json
+
 # skill-creator の eval 実行結果ワークスペース (再生成可能のため git 管理対象外)
 skills/*-workspace/
 
 # agent の eval 実行結果ワークスペース (再生成可能のため git 管理対象外)
 agents-workspace/
+
+# OS 固有
+.DS_Store
+Thumbs.db
+
+# エディタの一時ファイル
+*.swp
+*.swo
+*~
+.idea/
+.vscode/settings.json
+
+# ログ / 一時ファイル
+*.log
+tmp/
+.tmp/
