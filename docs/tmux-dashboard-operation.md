@@ -69,12 +69,12 @@ tmux select-layout -t my-workflows-dashboard:dashboard tiled
 `dashboard.sh` / `dashboard-pane.sh` は Spec 名を以下の allowlist で検証します:
 
 ```
-^[A-Za-z0-9._-]+$
+^[A-Za-z0-9][A-Za-z0-9._-]*$
 ```
 
-英数字 / ドット / アンダースコア / ハイフンのみ許可します。これは `tmux new-session` / `tmux split-window` の shell コマンド文字列経由でのコマンドインジェクション防止のためで、`printf %q` によるエスケープと合わせた 2 層防御です。allowlist 違反は stderr に「invalid spec name」を出力して exit 1 します (dashboard-pane) / スキップ + warning (dashboard)。
+**先頭**は英数字必須、**2 文字目以降**はドット / アンダースコア / ハイフンも許可します。先頭ドット (`.hidden`) / dot-only (`..`) / ハイフンスタート (`-rf`) は拒否されます (path traversal と `-` フラグ混入の予防)。これは `tmux new-session` / `tmux split-window` の shell コマンド文字列経由でのコマンドインジェクション防止のためで、`printf %q` によるエスケープと合わせた 2 層防御です。allowlist 違反は stderr に「invalid spec name」を出力して exit 1 します (dashboard-pane) / スキップ + warning (dashboard)。
 
-Spec 命名規則として kebab-case (`ecsite-mvp-auth` 等) を推奨します。allowlist は `..` / `.` のみの Spec 名を許容しますが、将来的に `^[A-Za-z0-9][A-Za-z0-9._-]*$` への強化が検討されています (specs/archive/tmux-dashboard-mvp.learn.md §7 参照)。
+Spec 命名規則として kebab-case (`ecsite-mvp-auth` 等) を推奨します。2026-04-24 に `^[A-Za-z0-9][A-Za-z0-9._-]*$` に強化され、security-reviewer iter-2 で指摘されていた dot-only 許容問題 (`specs/archive/tmux-dashboard-mvp.learn.md §7`) は解消済です。
 
 ## 5. 9 Spec 超の運用
 

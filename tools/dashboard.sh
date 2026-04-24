@@ -21,7 +21,7 @@ set -u
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 readonly PANE_SCRIPT="${SCRIPT_DIR}/dashboard-pane.sh"
-readonly SPEC_NAME_PATTERN='^[A-Za-z0-9._-]+$'
+readonly SPEC_NAME_PATTERN='^[A-Za-z0-9][A-Za-z0-9._-]*$'
 SPEC_DIR="${DASHBOARD_SPEC_DIR:-${REPO_ROOT}/specs}"
 SESSION="${DASHBOARD_SESSION:-my-workflows-dashboard}"
 

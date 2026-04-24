@@ -108,6 +108,8 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 - [x] **各 skill の利用例とベストプラクティス集** (2026-04-24 完了、`docs/best-practices.md` 新設、8 章構成で skill 別利用例 / ハマりどころ 10 件 / hook 連携 / orchestrator 活用 / 他プロジェクト持ち込みガイド / FAQ を網羅)
 - [x] **ライセンス選定** (2026-04-24 MIT 採択): `LICENSE` ファイル作成、README.md に明示。MIT 選定理由は「最も短文かつ商用/改変/再配布すべて自由で採用ハードル最低」「Claude Code 関連 OSS でも最多の採用実績」
 - [x] **GitHub への公開** (2026-04-24 完了): https://github.com/gassn/my-workflows (public、MIT License、topics: claude-code / claude-skills / spec-driven-development / ai-workflow / workflow-automation)
+- [x] **GitHub Actions CI** (2026-04-24 完了): `.github/workflows/ci.yml` を追加、4 ジョブ (tools テスト / skill & agent frontmatter 検証 / hook 構文チェック / 秘密情報スキャン) を push / PR / 手動実行で走らせる。README にバッジ追加
+- [x] **security Minor 対応: allowlist 強化** (2026-04-24 完了): dashboard / dashboard-pane の SPEC_NAME_PATTERN を `^[A-Za-z0-9][A-Za-z0-9._-]*$` に更新、dot-only / dot-starting / hyphen-starting Spec 名を拒否。回帰テスト T-test-8a〜8d (4 ケース) を追加、14/14 pass。security-reviewer iter-2 の残 Minor を解消
 - [x] **Agent Teams 機能の有効化** (2026-04-23 設定): user settings の env セクションに `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 追加 (Claude Code v2.1.32 以上、本プロジェクトは v2.1.118 で確認)。subagents は Agent Teams 無効時も利用可のため Phase 3-5 成果物への影響なし。詳細は `docs/phase5-completion.md §0` 参照
 
 **完了条件**: 第三者が本リポジトリを clone して、最小手順で本ワークフローを自分の環境に適用できること。

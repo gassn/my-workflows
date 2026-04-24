@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-dashboard:
+    name: tools/dashboard.sh テスト
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 前提ツールのバージョン確認
+        run: |
+          bash --version | head -1
+          jq --version
+          tmux -V
+
+      - name: bash 構文チェック
+        run: |
+          bash -n tools/dashboard.sh
+          bash -n tools/dashboard-pane.sh
+          bash -n tests/test_dashboard.sh
+
+      - name: tests/test_dashboard.sh 実行
+        run: bash tests/test_dashboard.sh
+
+  validate-skill-frontmatter:
+    name: skill / agent frontmatter 検証
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: skill SKILL.md が全て frontmatter を持つこと
+        run: |
+          set -e
+          missing=0
+          for f in skills/*/SKILL.md; do
+            if ! head -1 "$f" | grep -q '^---$'; then
+              echo "::error file=$f::SKILL.md が frontmatter (--- 区切り) で始まっていません"
+              missing=$((missing + 1))
+            fi
+            if ! grep -q '^name:' "$f"; then
+              echo "::error file=$f::frontmatter に name フィールドがありません"
+              missing=$((missing + 1))
+            fi
+            if ! grep -q '^description:' "$f"; then
+              echo "::error file=$f::frontmatter に description フィールドがありません"
+              missing=$((missing + 1))
+            fi
+          done
+          if [[ $missing -gt 0 ]]; then
+            echo "::error::skill frontmatter 違反: $missing 件"
+            exit 1
+          fi
+          echo "全 skill で frontmatter OK"
+
+      - name: agent .md が全て frontmatter を持つこと
+        run: |
+          set -e
+          missing=0
+          for f in agents/*.md; do
+            if ! head -1 "$f" | grep -q '^---$'; then
+              echo "::error file=$f::agent .md が frontmatter (--- 区切り) で始まっていません"
+              missing=$((missing + 1))
+            fi
+          done
+          if [[ $missing -gt 0 ]]; then
+            echo "::error::agent frontmatter 違反: $missing 件"
+            exit 1
+          fi
+          echo "全 agent で frontmatter OK"
+
+  validate-hooks:
+    name: hook スクリプトの bash 構文チェック
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: hooks/*.sh 構文チェック
+        run: |
+          set -e
+          for f in hooks/*.sh; do
+            bash -n "$f"
+            echo "OK: $f"
+          done
+
+  secrets-scan:
+    name: 秘密情報の混入チェック
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: assignment パターンで API_KEY / SECRET / TOKEN / PASSWORD を検索
+        run: |
+          set -e
+          # 16 文字以上の英数字 value を持つ secret 風 assignment を検出
+          # (説明文中の「token」「password」という単語はヒットしない)
+          matches=$(grep -riE "(api[_-]?key|secret|token|password)[[:space:]]*[:=][[:space:]]*['\"]?[A-Za-z0-9_-]{16,}" \
+            --include="*.md" --include="*.sh" --include="*.json" --include="*.yml" \
+            --exclude-dir=".git" --exclude-dir="node_modules" --exclude-dir=".venv" \
+            . || true)
+          if [[ -n "$matches" ]]; then
+            echo "::error::秘密情報っぽい assignment が検出されました"
+            echo "$matches"
+            exit 1
+          fi
+          echo "秘密情報の混入なし"

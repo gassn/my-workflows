@@ -109,6 +109,23 @@ else
 fi
 rm -rf "$MARKER_DIR"
 
+# --- T-test-8: allowlist の dot-only / dot-starting 拒否 (security iter-2 Minor 対応) ---
+# `.` / `..` / `.hidden` のような先頭ドット Spec 名は WORKTREES_DIR/../progress.md 等の path
+# traversal の余地があるため、^[A-Za-z0-9][A-Za-z0-9._-]*$ で弾く
+assert_case "T-test-8a: dot-only Spec 名 (..) は dashboard-pane で拒否" \
+  "DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_EMPTY' bash '$DASHBOARD_PANE' '..' 2>&1" \
+  1 "(invalid spec name|不正な spec 名)"
+assert_case "T-test-8b: dot-starting Spec 名 (.hidden) は dashboard-pane で拒否" \
+  "DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_EMPTY' bash '$DASHBOARD_PANE' '.hidden' 2>&1" \
+  1 "(invalid spec name|不正な spec 名)"
+assert_case "T-test-8c: dot-only Spec 名 (..) は dashboard でも拒否" \
+  "DASHBOARD_DRY_RUN=1 DASHBOARD_SPEC_DIR='$TMP_EMPTY' bash '$DASHBOARD' '..' 2>&1" \
+  0 "(invalid spec name|不正な spec 名)"
+# hyphen-starting は従来通り拒否
+assert_case "T-test-8d: hyphen-starting Spec 名 (-rf) は dashboard-pane で拒否" \
+  "DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_EMPTY' bash '$DASHBOARD_PANE' '-rf' 2>&1" \
+  1 "(invalid spec name|不正な spec 名)"
+
 # --- 結果出力 ---
 echo ""
 echo "=== test_dashboard.sh 結果 ==="

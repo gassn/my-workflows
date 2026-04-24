@@ -1,5 +1,6 @@
 # my-workflows
 
+[![CI](https://github.com/gassn/my-workflows/actions/workflows/ci.yml/badge.svg)](https://github.com/gassn/my-workflows/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-gassn%2Fmy--workflows-blue.svg)](https://github.com/gassn/my-workflows)
 
