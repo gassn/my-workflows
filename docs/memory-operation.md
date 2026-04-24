@@ -2,25 +2,37 @@
 
 Claude Code には永続的な file-based memory system (`~/.claude/projects/<encoded-path>/memory/`) が備わっており、会話を跨いで情報を保持できます。本プロジェクトでの memory 機能の扱いを整理します。
 
-## 現状 (2026-04-23 時点)
+## 現状 (2026-04-24 時点)
 
-本プロジェクトの memory ディレクトリ (`~/.claude/projects/-home-gassn-my-workflows/memory/`) は **空** です。設計知識は以下の 3 階層で管理しており、auto memory は積極運用していません。
+本プロジェクトの memory ディレクトリ (`~/.claude/projects/-home-gassn-my-workflows/memory/`) は **補助的に運用開始** しました。設計知識は引き続き以下の 3 階層で管理し、memory はドキュメントに吸収できない user / feedback 情報のみに限定しています。
 
 | 階層 | 媒体 | 例 |
 |---|---|---|
 | ルール / 横断方針 | `CLAUDE.md` | 設計思想、git 運用、skill/agent 配置方法、参考フレームワーク優先順位 |
 | 個別コンポーネント設計 | `skills/<name>/SKILL.md` / `agents/<name>.md` | 各 skill / agent の起動条件・役割・入出力・アンチパターン |
 | Phase / プロジェクト進捗 | `docs/phase<N>-completion.md` / `ROADMAP.md` | Phase 3/4/5 の実装履歴・知見・未対応事項 |
+| ユーザー個人 / 対話指針 (memory 限定) | `~/.claude/projects/.../memory/*.md` | 作業スタイル、コミュニケーション嗜好、繰り返し指摘される feedback |
 
-この構造で「将来の自分 / 他のセッション / 第三者」が情報に到達できるため、auto memory が担うべき「会話を跨ぐ記憶」のほとんどは既にカバー済です。
+2026-04-24 時点で保存済の memory 3 件:
 
-## auto memory を使わない判断の根拠
+- `user_profile.md` (type: user): gassn の作業スタイル / 志向 / 公開方針
+- `feedback_status_freshness.md` (type: feedback): iteration 中の progress.json 最新化
+- `feedback_choice_based_progression.md` (type: feedback): 選択肢提示 + 推奨案形式での進行
+
+プロジェクト状態 / Phase 進捗 / 参照情報は引き続き docs/ 側に集約し、memory には入れません (重複保守回避)。
+
+## auto memory を docs に集約しない判断の根拠 (user / feedback のみ memory に保存)
 
 1. **本プロジェクト = 環境拡張プロジェクト**: 通常の開発プロジェクトと異なり、成果物自体が Claude Code の振る舞いを定義する資産 (skill / agent / hook) であり、資産として外部化するほうが自然
 2. **docs/ の充実**: 9 ステージのワークフロー定義 / コンポーネントマップ / 完了レポート等で、設計意図・判断根拠・進捗がすべて文書化されている
 3. **skill / agent / hook の frontmatter**: 起動トリガー・責務・アンチパターンが各コンポーネントに埋め込まれており、Claude が必要時に Read で取得可能
 4. **SessionStart hook の `load-session-skills.sh`**: using-superpowers 方式でインデックス常駐、詳細は必要時に Read、を実現済み
 5. **auto memory の重複運用を避ける**: 同じ情報が memory と docs 両方にあると、どちらが最新か不明で保守コスト増
+
+ただし以下 2 種類は docs に馴染まないため memory に限定保存:
+
+- **user 系 (ユーザー個人の作業スタイル / 志向)**: 公開ドキュメントに書くと第三者にとってノイズ / プライバシー感も出る
+- **feedback 系 (対話の進め方 / 繰り返し指摘される運用)**: 「A/B/C 選択肢で進める」等の対話スタイルは、公開ドキュメントよりセッション横断 memory が適する
 
 ## 積極運用すべきシナリオ (将来の検討項目)
 
