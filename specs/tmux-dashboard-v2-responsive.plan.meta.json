@@ -1,0 +1,14 @@
+{
+  "spec": "tmux-dashboard-v2-responsive",
+  "plan_started_at": "2026-04-24T06:50:52Z",
+  "plan_completed_at": "2026-04-24T06:51:47Z",
+  "tasks_count": 4,
+  "parallel_groups_count": 0,
+  "files_touched_union": [
+    "tools/dashboard-pane.sh",
+    "tests/test_dashboard.sh",
+    "docs/tmux-dashboard-operation.md"
+  ],
+  "depends_on": [],
+  "references_other_plans": ["specs/archive/tmux-dashboard-mvp.plan.md"]
+}
