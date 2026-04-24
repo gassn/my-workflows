@@ -26,8 +26,8 @@ SPEC_DIR="${DASHBOARD_SPEC_DIR:-${REPO_ROOT}/specs}"
 WORKTREES_DIR="${DASHBOARD_WORKTREES_DIR:-${REPO_ROOT}/worktrees}"
 POLL_SEC="${DASHBOARD_POLL_SEC:-1}"
 
-# ANSI カラー定数 (dashboard-color Spec §3.1.1)
-# 後続 dashboard-color-themes Spec で load_theme により上書き可能
+# ANSI カラー定数 (default fallback、load_theme で上書き可能)
+# dashboard-color-themes Spec により、tools/dashboard-themes/<name>.env で変更可能
 COLOR_COMPLETED=$'\e[32m'
 COLOR_IN_PROGRESS=$'\e[33m'
 COLOR_PENDING=''
@@ -36,6 +36,75 @@ COLOR_BLOCKED=$'\e[35m'
 COLOR_SHIPPED=$'\e[36m'
 COLOR_ABORTED=$'\e[31m'
 COLOR_RESET=$'\e[0m'
+
+# load_theme: tools/dashboard-themes/<name>.env をロードして COLOR_* を上書き
+# source / eval / コマンド置換を一切使わない 4 段検証 (dashboard-color-themes Spec §7.1):
+#   1. theme 名 allowlist (^[A-Za-z0-9][A-Za-z0-9._-]*$、path traversal 防止)
+#   2. 行単位 allowlist (^COLOR_[A-Z_]+=...$)
+#   3. quote 剥離 + 値 regex ^(\e\[[0-9;]+m)*$
+#   4. 1 件でも違反で全体 default フォールバック (行単位部分読み込み禁止)
+load_theme() {
+  local theme_name="$1"
+  local theme_file
+
+  if [[ ! "$theme_name" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+    echo "load_theme: invalid theme name '$theme_name', fallback to default" >&2
+    [[ "$theme_name" != "default" ]] && load_theme "default"
+    return
+  fi
+  theme_file="${SCRIPT_DIR}/dashboard-themes/${theme_name}.env"
+  if [[ ! -f "$theme_file" ]]; then
+    echo "load_theme: theme file not found '$theme_file', fallback to default" >&2
+    [[ "$theme_name" != "default" ]] && load_theme "default"
+    return
+  fi
+
+  local had_invalid=0
+  declare -A _pending
+  local line var val
+  while IFS= read -r line; do
+    # 空行 / コメント行はスキップ (invalid 扱いしない)
+    [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+    if [[ ! "$line" =~ ^(COLOR_[A-Z_]+)=(.*)$ ]]; then
+      had_invalid=1
+      continue
+    fi
+    var="${BASH_REMATCH[1]}"
+    val="${BASH_REMATCH[2]}"
+    # quote 剥離 (シングル / ダブル両対応)
+    if [[ "$val" =~ ^\'(.*)\'$ ]] || [[ "$val" =~ ^\"(.*)\"$ ]]; then
+      val="${BASH_REMATCH[1]}"
+    fi
+    # 値 regex: \e[数;数m の連なり、または空
+    if [[ "$val" =~ ^(\\e\[[0-9\;]+m)*$ ]]; then
+      _pending["$var"]="$val"
+    else
+      had_invalid=1
+    fi
+  done < "$theme_file"
+
+  if [[ "$had_invalid" -eq 1 ]]; then
+    echo "load_theme: invalid entry in ${theme_name}.env, fallback to default" >&2
+    if [[ "$theme_name" != "default" ]]; then
+      load_theme "default"
+    fi
+    return
+  fi
+
+  # 検証済のみ直接代入 (source / eval / コマンド置換なし)
+  # env ファイル上の '\e[32m' (literal) を実際の ESC 文字に変換
+  local key raw converted
+  for key in "${!_pending[@]}"; do
+    raw="${_pending[$key]}"
+    converted="$(printf '%b' "$raw")"
+    printf -v "$key" '%s' "$converted"
+    export "$key"
+  done
+}
+
+# skill 起動時にテーマを 1 回ロード (DASHBOARD_THEME 未指定時は default)
+# 警告は stderr に出す (test / ユーザーが検知できるよう抑制しない)
+load_theme "${DASHBOARD_THEME:-default}"
 
 # _is_color_enabled: カラー出力の有効性を判定
 # 優先度: DASHBOARD_FORCE_COLOR=1 (強制 ON、test 用) > NO_COLOR / DASHBOARD_NO_COLOR (強制 OFF) > [[ -t 1 ]] (TTY 判定)
