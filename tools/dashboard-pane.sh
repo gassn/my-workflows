@@ -10,6 +10,12 @@
 #   DASHBOARD_SPEC_DIR     progress/result ファイルを探すディレクトリ (default: repo/specs)
 #   DASHBOARD_PANE_ONESHOT 1 のとき 1 回描画して即 exit (test 用、default: unset)
 #   DASHBOARD_POLL_SEC     poll 間隔秒 (default: 1)
+#   DASHBOARD_FAKE_COLS    pane 幅を強制する正整数 (test 用、default: unset)
+#
+# レイアウトモード (v2-responsive、pane 幅に応じた 3 モード):
+#   wide (>= 60 カラム):   4 列 (stage / status / started_at / completed_at)
+#   narrow (40-59 カラム): 2 列 (stage / status)
+#   compact (< 40 カラム): 1 列 (stage=status)
 
 set -u
 
@@ -54,6 +60,73 @@ ensure_jq() {
   fi
 }
 
+# get_pane_cols: pane 幅 (カラム数) を 4 段フォールバックで取得する
+# 1. DASHBOARD_FAKE_COLS (test 用、正整数のみ採用)
+# 2. $COLUMNS (bash の対話 shell で設定される)
+# 3. tput cols (pty から ioctl で取得、非対話でも動作することが多い)
+# 4. 80 default (いずれも失敗時、wide 扱いに落とす)
+# stdout に整数を 1 つ出力する。
+get_pane_cols() {
+  local fake="${DASHBOARD_FAKE_COLS:-}"
+  if [[ "$fake" =~ ^[0-9]+$ ]] && [[ "$fake" -gt 0 ]]; then
+    echo "$fake"
+    return 0
+  fi
+
+  local cols="${COLUMNS:-}"
+  if [[ "$cols" =~ ^[0-9]+$ ]] && [[ "$cols" -gt 0 ]]; then
+    echo "$cols"
+    return 0
+  fi
+
+  cols="$(tput cols 2>/dev/null || true)"
+  if [[ "$cols" =~ ^[0-9]+$ ]] && [[ "$cols" -gt 0 ]]; then
+    echo "$cols"
+    return 0
+  fi
+
+  echo 80
+}
+
+# render_stages_wide: stages を 4 列テーブルで表示 (幅 60 以上)
+# 引数: $1=progress_json (path)
+render_stages_wide() {
+  local progress_json="$1"
+  printf "%-12s %-12s %-24s %-24s\n" "stage" "status" "started_at" "completed_at"
+  jq -r '
+    .stages
+    | to_entries[]
+    | [.key, (.value.status // "-"), (.value.started_at // "-"), (.value.completed_at // "-")]
+    | @tsv
+  ' "$progress_json" 2>/dev/null | while IFS=$'\t' read -r stage status started completed; do
+    printf "%-12s %-12s %-24s %-24s\n" "$stage" "$status" "$started" "$completed"
+  done
+}
+
+# render_stages_narrow: stages を 2 列テーブルで表示 (幅 40-59)
+# 時刻カラムは省略。
+# 引数: $1=progress_json (path)
+render_stages_narrow() {
+  local progress_json="$1"
+  printf "%-12s %s\n" "stage" "status"
+  jq -r '
+    .stages
+    | to_entries[]
+    | [.key, (.value.status // "-")]
+    | @tsv
+  ' "$progress_json" 2>/dev/null | while IFS=$'\t' read -r stage status; do
+    printf "%-12s %s\n" "$stage" "$status"
+  done
+}
+
+# render_stages_compact: stages を 1 列 key=value で表示 (幅 40 未満)
+# 時刻省略、折返しはターミナルに委ねる (Spec §3.5)。
+# 引数: $1=progress_json (path)
+render_stages_compact() {
+  local progress_json="$1"
+  jq -r '.stages | to_entries[] | "\(.key)=\(.value.status // "-")"' "$progress_json" 2>/dev/null
+}
+
 # render_spec: 指定 Spec の現在状態を整形して stdout に書く
 # 引数: $1=spec-name (呼び出し元で validate_spec_name 済みの前提)
 render_spec() {
@@ -76,15 +149,16 @@ render_spec() {
   fi
   printf "%s\n\n" "$meta"
 
-  printf "%-12s %-12s %-24s %-24s\n" "stage" "status" "started_at" "completed_at"
-  jq -r '
-    .stages
-    | to_entries[]
-    | [.key, (.value.status // "-"), (.value.started_at // "-"), (.value.completed_at // "-")]
-    | @tsv
-  ' "$progress_json" 2>/dev/null | while IFS=$'\t' read -r stage status started completed; do
-    printf "%-12s %-12s %-24s %-24s\n" "$stage" "$status" "$started" "$completed"
-  done
+  # pane 幅に応じて 3 モードから stages レンダラを選択 (v2-responsive)
+  local cols
+  cols="$(get_pane_cols)"
+  if [[ "$cols" -ge 60 ]]; then
+    render_stages_wide "$progress_json"
+  elif [[ "$cols" -ge 40 ]]; then
+    render_stages_narrow "$progress_json"
+  else
+    render_stages_compact "$progress_json"
+  fi
 
   if [[ -f "$result_json" ]]; then
     printf "\n-- result --\n"

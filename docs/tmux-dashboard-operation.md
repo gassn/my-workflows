@@ -61,8 +61,28 @@ tmux select-layout -t my-workflows-dashboard:dashboard tiled
 | `DASHBOARD_DRY_RUN` | `1` のとき対象一覧だけ表示して tmux 起動なし | 未設定 |
 | `DASHBOARD_FAKE_NO_TMUX` | `1` のとき tmux 未インストールを擬似再現 (test 用) | 未設定 |
 | `DASHBOARD_PANE_ONESHOT` | `1` のとき dashboard-pane が 1 回描画して exit (test 用) | 未設定 |
+| `DASHBOARD_FAKE_COLS` | pane 幅を正整数で強制 (test 用、v2-responsive 追加) | 未設定 |
 
 別ディレクトリから dashboard を動かしたいケースでは `DASHBOARD_SPEC_DIR` / `DASHBOARD_WORKTREES_DIR` を両方指定してください。tmux が既に別 server で起動している場合、環境変数が server に引き継がれないため、`tmux -L <socket名>` で別 socket を使うか、`-e KEY=VALUE` flag で明示的に環境を渡す必要があります (下記 §7.3 参照)。
+
+### 3.1 pane 幅適応レイアウト (v2-responsive)
+
+`dashboard-pane.sh` は pane の幅に応じて stages テーブルを 3 モードで切り替えます。幅は以下の 4 段フォールバックで取得します:
+
+1. `DASHBOARD_FAKE_COLS` (test 用、正整数のみ採用)
+2. `$COLUMNS` (bash の対話 shell で設定される)
+3. `tput cols` (pty から ioctl で取得、非対話でも動作)
+4. `80` default (いずれも失敗時、wide モードに落とす)
+
+| モード | pane 幅 | 表示 |
+|---|---|---|
+| wide | 60 カラム以上 | 4 列テーブル (`stage / status / started_at / completed_at`) |
+| narrow | 40-59 カラム | 2 列テーブル (`stage / status`)、時刻は省略 |
+| compact | 40 カラム未満 | 1 列 (`stage=status` 形式の key-value 列挙)、時刻省略 |
+
+compact モードおよび narrow モードで 1 行が pane 幅を超える場合 (長い status / 長いステージ名) は、ターミナルの折返しに委ねて truncate は行いません。詳細は `specs/archive/tmux-dashboard-v2-responsive.md` §3.5 を参照してください。
+
+9 pane 超 (§5) で狭くなる懸念は、compact モードが自動で選ばれることで stages 状態の把握が可能になります。ただし時刻情報は失われるため、進行時間を確認したい場合は pane を手動で拡大 (tmux `Ctrl-b z` で zoom) して wide モードに切り替えてください。
 
 ## 4. Spec 名の制約 (セキュリティ)
 
