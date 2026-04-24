@@ -126,6 +126,41 @@ assert_case "T-test-8d: hyphen-starting Spec 名 (-rf) は dashboard-pane で拒
   "DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_EMPTY' bash '$DASHBOARD_PANE' '-rf' 2>&1" \
   1 "(invalid spec name|不正な spec 名)"
 
+# --- T-test-9 / T-test-10: pane 幅適応 (v2-responsive) ---
+# 実在する Spec (progress.json あり) を対象にして 3 モード切替 + fallback を検証する
+# archive 済の tmux-dashboard-mvp.progress.json を test fixture として使う
+TMP_PROG="$(mktemp -d)"
+trap 'rm -rf "$TMP_EMPTY" "$TMP_PROG"' EXIT
+cp "$REPO_ROOT/specs/archive/tmux-dashboard-mvp.progress.json" "$TMP_PROG/sample.progress.json"
+
+# T-test-9a: wide モード (FAKE_COLS=80)
+# 4 列テーブル ヘッダ (stage / status / started_at / completed_at) が出力される
+assert_case "T-test-9a: DASHBOARD_FAKE_COLS=80 で wide モード (4 列)" \
+  "DASHBOARD_FAKE_COLS=80 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1" \
+  0 "stage +status +started_at +completed_at"
+
+# T-test-9b: narrow モード (FAKE_COLS=50)
+# 2 列 (stage / status のみ)、started_at 見出しは出力されない
+assert_case "T-test-9b: DASHBOARD_FAKE_COLS=50 で narrow モード (started_at 見出しなし)" \
+  "DASHBOARD_FAKE_COLS=50 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1 | grep -E '^stage'" \
+  0 "^stage +status$"
+
+# T-test-9c: compact モード (FAKE_COLS=30)
+# 1 列 (stage=status 形式)
+assert_case "T-test-9c: DASHBOARD_FAKE_COLS=30 で compact モード (key=value)" \
+  "DASHBOARD_FAKE_COLS=30 DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1" \
+  0 "isolate=completed"
+
+# T-test-10a: FAKE_COLS 未設定時は $COLUMNS または tput fallback で動作
+assert_case "T-test-10a: DASHBOARD_FAKE_COLS 未設定で fallback 動作" \
+  "unset DASHBOARD_FAKE_COLS; DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1" \
+  0 "(isolate|implement|verify)"
+
+# T-test-10b: 不正値 (abc) の場合も fallback で wide になり、コマンド自体は成功する
+assert_case "T-test-10b: DASHBOARD_FAKE_COLS=abc (非数値) で fallback → wide" \
+  "DASHBOARD_FAKE_COLS=abc DASHBOARD_PANE_ONESHOT=1 DASHBOARD_SPEC_DIR='$TMP_PROG' bash '$DASHBOARD_PANE' sample 2>&1" \
+  0 "stage +status +started_at"
+
 # --- 結果出力 ---
 echo ""
 echo "=== test_dashboard.sh 結果 ==="
