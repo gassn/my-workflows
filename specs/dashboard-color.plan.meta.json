@@ -1,0 +1,14 @@
+{
+  "spec": "dashboard-color",
+  "plan_started_at": "2026-04-24T07:42:42Z",
+  "plan_completed_at": "2026-04-24T07:43:33Z",
+  "tasks_count": 4,
+  "parallel_groups_count": 0,
+  "files_touched_union": [
+    "tools/dashboard-pane.sh",
+    "tests/test_dashboard.sh",
+    "docs/tmux-dashboard-operation.md"
+  ],
+  "depends_on": [],
+  "references_other_plans": []
+}

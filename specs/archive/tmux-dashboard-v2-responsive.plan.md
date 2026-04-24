@@ -1,7 +1,7 @@
 ---
 name: tmux-dashboard-v2-responsive
 spec_path: specs/tmux-dashboard-v2-responsive.md
-status: plan-complete
+status: archived
 created: 2026-04-24
 ---
 
