@@ -1,13 +1,14 @@
 # コンポーネントマップ (skill + agent)
 
-本ドキュメントは Phase 3 時点で実装済みの **skill 11 種 + agent 5 種** の役割・連携・起動トリガー・成果物を整理し、Mermaid 記法で関係を可視化したものです。個別詳細は各 `skills/<name>/SKILL.md` / `agents/<name>.md` を参照してください。
+本ドキュメントは Phase 3-5 で実装済みの **skill 12 種 + agent 7 種 + hook 8 種** の役割・連携・起動トリガー・成果物を整理し、Mermaid 記法で関係を可視化したものです。個別詳細は各 `skills/<name>/SKILL.md` / `agents/<name>.md` / `hooks/<name>.sh` を参照してください。
 
 ## 1. サマリ
 
-- **skill 11 種**: ワークフロー (`docs/workflow.md`) の 9 ステージをカバー (Brainstorming → DAG 構築 → Spec → Spec Review → Isolate → Plan → Implement → Verify → Code Review → ship → Learn)
-- **agent 5 種**: spec-leader の Implement / Verify / Code Review ステージで起動される worker
-- **連携方式**: skill 間は自動起動チェーン、agent は spec-leader が起動
-- **Phase 5 準備**: spec-leader インタフェースは改修不要、残 agent 3 種 (investigator / spec-reviewer / orchestrator) は Phase 5 対応
+- **skill 12 種**: ワークフロー (`docs/workflow.md`) の 9 ステージをカバー (Brainstorming → DAG 構築 → Spec → Spec Review → Plan → Isolate → Implement → Verify → Code Review → ship → Learn) + 複数 Spec 統括 (orchestrator) + 会話モード系 (genshijin-without-docs)
+- **agent 7 種**: spec-leader の Implement / Verify / Code Review ステージで起動される worker 5 種 + Phase 5 で新設された investigator / spec-reviewer
+- **hook 8 種**: SessionStart / PreToolUse / PostToolUse / Stop / InstructionsLoaded / WorktreeCreate / WorktreeRemove / TaskCompleted
+- **連携方式**: skill 間は自動起動チェーン、agent は spec-leader が起動、hook は Claude Code のイベント発火
+- **Phase 5 転換**: 当初 orchestrator は agent 想定だったが「Subagents cannot spawn their own subagents」仕様により skill に再設計、main agent が orchestrator + spec-leader を兼任実行する 1 階層構造に変更
 
 ## 2. コンポーネント一覧
 

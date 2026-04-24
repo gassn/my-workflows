@@ -1,6 +1,6 @@
 # ロードマップ
 
-本プロジェクトは Claude Code の環境を自分用に最適化するためのものです。`docs/workflow.md` で定義したワークフロー (8 フェーズ + 3 層階層構造) を段階的に実装していきます。
+本プロジェクトは Claude Code の環境を自分用に最適化するためのものです。`docs/workflow.md` で定義したワークフロー (9 ステージ + 3 層階層構造) を Phase 1〜6 で段階的に実装していきます。公開 URL: https://github.com/gassn/my-workflows
 
 ## Phase 1: 基礎整備 (完了)
 
@@ -14,43 +14,43 @@
 - [x] 参考フレームワーク一覧ドキュメントの整備 (`docs/frameworks.md`)
 - [x] 各フレームワークの中核 skill / hook / agent パターンの分類表作成 (`docs/frameworks.md` § 11)
 
-## Phase 2: ワークフロー骨子定義 (現在)
+## Phase 2: ワークフロー骨子定義 (完了)
 
 複数フレームワークから良い部分を独自合成し、本プロジェクト標準のワークフローを定義するフェーズです。
 
 - [x] `docs/workflow.md` 作成 (8 フェーズ + 3 層階層 + Mermaid 図)
 - [x] `ROADMAP.md` 再構成 (Phase 2-6 を `docs/workflow.md` 駆動に統合)
-- [ ] settings.json 最新仕様の参照ドキュメント整備 (任意、Phase 4 開始前)
+- [x] settings.json 最新仕様の参照ドキュメント整備 (Phase 4 で `.claude/settings.json` 実装 + `docs/hookify-setup.md` で hook 仕様参照済)
 
-**完了条件**: ワークフロー全体像と各フェーズの責務が確定し、Phase 3 以降の実装方針が明確になっていること。
+**完了条件**: ワークフロー全体像と各フェーズの責務が確定し、Phase 3 以降の実装方針が明確になっていること。 → 達成
 
-## Phase 3: 単一 Spec 版 skill / agent 実装
+## Phase 3: 単一 Spec 版 skill / agent 実装 (完了)
 
-`docs/workflow.md` で定義した 9 フェーズ (Spec / Spec Review / Isolate / Plan / Implement / Verify / Code Review / ship / Learn) を **単一 Spec 前提** で動作するよう実装します。orchestrator は Phase 5 で追加します。
+`docs/workflow.md` で定義した 9 フェーズ (Spec / Spec Review / Isolate / Plan / Implement / Verify / Code Review / ship / Learn) を **単一 Spec 前提** で動作するよう実装しました。orchestrator は Phase 5 で追加。詳細は `docs/phase3-completion.md` を参照してください。
 
-### skill (11 種)
+### skill (11 種、orchestrator は Phase 5 で追加)
 
 - [x] `brainstorming` (Spec 前段の要件深掘り + Spec 分割提案 + コードベース精査、superpowers 参考、commit `af74607`)
-- [ ] `spec-dag-builder` (複数 Spec の依存関係解析、DAG 構築、段階的アップデート、独自)
-- [ ] `writing-spec` (Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理、OpenSpec + 独自)
-- [ ] `spec-review` (AI 自動 Spec レビュー、claude-scrum-team 参考)
-- [ ] `spec-leader` (Isolate → Code Review のステージ遷移制御、独自)
-- [ ] `writing-plan` (技術計画 + タスク分解、superpowers + spec-kit 参考)
-- [ ] `tdd-driver` (テスト先行強制、superpowers 参考)
-- [ ] `verification-before-completion` (完了前検証強制、superpowers 参考)
-- [ ] `receiving-code-review` (レビュー指摘対応、superpowers 参考)
-- [ ] `cross-model-review` (Codex 等の独立モデルレビュー、claude-scrum-team 参考)
-- [ ] `learn` (振り返り + 改善提案、独自)
+- [x] `spec-dag-builder` (複数 Spec の依存関係解析、DAG 構築、段階的アップデート、2026-04-22 改修で単一 Spec も 1 ノード DAG 生成、独自)
+- [x] `writing-spec` (Brainstorming ノートから 7 章 Spec 生成、archive 移動、DAG 順処理、OpenSpec + 独自)
+- [x] `spec-review` (AI 自動 Spec レビュー、claude-scrum-team 参考)
+- [x] `spec-leader` (Isolate → Code Review のステージ遷移制御、独自、Phase 5 改修不要インタフェース確定)
+- [x] `writing-plan` (技術計画 + タスク分解、2026-04-22 改修で main 側動作 + files_touched 必須、superpowers + spec-kit 参考)
+- [x] `tdd-driver` (テスト先行強制、superpowers 参考)
+- [x] `verification-before-completion` (完了前検証強制、superpowers 参考)
+- [x] `receiving-code-review` (レビュー指摘対応、superpowers 参考)
+- [x] `cross-model-review` (Codex 等の独立モデルレビュー、Phase 3 は PENDING placeholder 運用、claude-scrum-team 参考)
+- [x] `learn` (振り返り + 改善提案、独自)
 
-### agent (7 種、orchestrator は Phase 5)
+### agent (7 種)
 
-- [ ] `developer` (タスク単位の TDD 実装)
-- [ ] `code-reviewer` (コード品質レビュー)
-- [ ] `security-reviewer` (セキュリティ観点レビュー)
-- [ ] `cross-model-reviewer` (他モデル経由のレビュー)
-- [ ] `verifier` (全検証 test / lint / type 実行)
-- [ ] `spec-reviewer` (Spec の完全性 / 実現可能性 / 整合性レビュー)
-- [ ] `investigator` (コードベース / 依存 / 類似実装の調査、Plan フェーズ用)
+- [x] `developer` (タスク単位の TDD 実装、2026-04-21 実装)
+- [x] `code-reviewer` (コード品質レビュー、2026-04-21 実装)
+- [x] `security-reviewer` (セキュリティ観点レビュー、2026-04-21 実装)
+- [x] `cross-model-reviewer` (他モデル経由のレビュー、2026-04-21 実装)
+- [x] `verifier` (全検証 test / lint / type 実行、2026-04-21 実装)
+- [x] `spec-reviewer` (Spec の完全性 / 実現可能性 / 整合性レビュー、Phase 5 で新設)
+- [x] `investigator` (コードベース / 依存 / 類似実装の調査、Plan フェーズ用、Phase 5 で新設)
 
 ### 設計制約
 
@@ -60,9 +60,9 @@
   - 出力: 進捗ファイル + 結果ファイルのパス
 - これにより Phase 5 で orchestrator 追加時、specLeader の改修を不要にする
 
-**完了条件**: 単一 Spec を入力として、Spec Review → ship → Learn まで人間最小介入で完走できること。
+**完了条件**: 単一 Spec を入力として、Spec Review → ship → Learn まで人間最小介入で完走できること。 → 達成 (iter-3/4/5 統合完走 verdict: shipped で確認、Phase 6 バッチ 2 (a) `tmux-dashboard-mvp` でも再検証済)
 
-## Phase 4: hook 自動化
+## Phase 4: hook 自動化 (完了)
 
 skill 単体では強制力が弱いため、hook で挙動を物理的に固定化します。
 
@@ -80,7 +80,7 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 
 **Phase 4 現状 (2026-04-23)**: 9 項目中 6 実装済 + 2 は Phase 5 連携依存として先送り + 1 は設計方針確定 (Phase 6 で有効化)。TDD 強制 (PreToolUse) / 自動テスト (PostToolUse) / Verify 状態確認 (Stop) / SKILL 常駐インデックス (SessionStart) / 関連ファイル提示 (InstructionsLoaded) が動作し、Phase 3 skill の強制力は当初想定の大半を物理化。WorktreeCreate/Remove と TaskCompleted は Phase 5 Agent isolation 移行時に合わせて再実装するのが自然なため、Phase 4 は実質完了扱い。
 
-## Phase 5: orchestrator 追加 (複数 Spec 並列)
+## Phase 5: orchestrator 追加 (複数 Spec 並列、実質完了)
 
 複数 Spec を並列実行する機構を追加します。Phase 3 で確定したインタフェースに沿って specLeader を呼び出し、specLeader 自体は改修不要にします。
 
@@ -96,11 +96,11 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 
 **完了条件**: 2 つ以上の Spec を入力して、orchestrator skill が spec-leader を逐次起動し、依存順に ship まで完走できること (並列は Phase 6 以降)。
 
-## Phase 6: 統合改善ループ + 公開検討
+## Phase 6: 統合改善ループ + 公開検討 (🚧 バッチ 1 完了 / バッチ 2 (a) 完了)
 
 ワークフロー全体の継続的改善とプロジェクト公開を検討します。
 
-- [ ] **全フェーズの統合テスト**: 実プロジェクトでの試用 (本リポジトリ自身を題材にドッグフーディング、Phase 6 バッチ 2 で tmux-dashboard-mvp 題材にて着手中)
+- [~] **全フェーズの統合テスト**: Phase 6 バッチ 2 (a) で本リポジトリ自身を題材にしたドッグフーディング 1 件完走 (`tmux-dashboard-mvp`、2026-04-20 shipped-cross-model-pending、`docs/phase6-progress.md §3` / `specs/archive/tmux-dashboard-mvp.*`)。残 Try 5.2 (pane 幅適応) を含むバッチ 2 (b) 題材が次サイクル候補
 - [~] **skill-creator による各 skill の eval iteration**: 2026-04-24 時点で記述ベース実証完了 (spec-leader iter-5 / writing-plan iter-5 / learn iter-2 の 3 skill で Try 5.1 / 5.3 / 5.4 / 5.5 の改修効果を SKILL.md 反映整合性として検証済、docs/phase6-progress.md §4 参照)。LLM 再実行による定量 Delta 測定 (without_skill vs with_skill の出力比較) は Phase 6 バッチ 3 以降の専用セッションで実施予定
 - [x] **CLAUDE.md の体系化**: プロジェクト横断の共通ルールと個別ルールの分離 (2026-04-23 バッチ 1 完了、160→128 行スリム化、skill/agent 詳細を components-map に委任)
 - [x] **memory 運用の最適化**: 記憶すべき情報とそうでない情報の線引き整備 (2026-04-23 バッチ 1 完了、`docs/memory-operation.md` 新設で方針明文化)

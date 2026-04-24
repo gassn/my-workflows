@@ -1,6 +1,11 @@
 # my-workflows
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-gassn%2Fmy--workflows-blue.svg)](https://github.com/gassn/my-workflows)
+
 Claude Code 環境を個人用に最適化するためのプロジェクトです。既存の優れたフレームワーク群 (superpowers / spec-kit / claude-scrum-team 等) を参考にしつつ、自身の開発スタイルに合った skills / agents / hooks を段階的に構築しています。
+
+**公開 URL**: https://github.com/gassn/my-workflows
 
 ## 設計思想
 
@@ -85,9 +90,14 @@ Brainstorming → DAG 構築 → Spec → Spec Review → Plan → Isolate → I
 
 ```
 ~/my-workflows/
-├── README.md                # 本ファイル
-├── CLAUDE.md                # Claude Code へのガイダンス
-├── ROADMAP.md               # Phase 1〜6 の段階的構築計画
+├── README.md                         # 本ファイル
+├── LICENSE                           # MIT License
+├── CLAUDE.md                         # Claude Code へのガイダンス
+├── ROADMAP.md                        # Phase 1〜6 の段階的構築計画
+├── tools/                            # ドッグフーディング成果物 (tmux ダッシュボード 2 スクリプト)
+├── tests/                            # tools/ のテスト (bash 構文 + エラーパス 10 ケース)
+├── specs/                            # Spec 作業領域
+│   └── archive/                      # ship 済 Spec の集約 (tmux-dashboard-mvp.* 9 ファイル)
 ├── docs/
 │   ├── workflow.md                   # ワークフロー定義
 │   ├── components-map.md             # skill/agent/hook 俯瞰 (Mermaid 図 + 使用ツール)
@@ -96,18 +106,19 @@ Brainstorming → DAG 構築 → Spec → Spec Review → Plan → Isolate → I
 │   ├── phase3-completion.md          # Phase 3 完了レポート
 │   ├── phase4-completion.md          # Phase 4 完了レポート
 │   ├── phase5-completion.md          # Phase 5 完了レポート
+│   ├── phase6-progress.md            # Phase 6 進捗レポート (中間)
 │   ├── hookify-setup.md              # hookify プラグイン導入ガイド
 │   ├── memory-operation.md           # Claude Code auto memory 運用方針
-│   ├── best-practices.md             # 利用例 + ハマりどころ + 他プロジェクト持ち込みガイド
+│   ├── best-practices.md             # 利用例 + ハマりどころ + 他プロジェクト持ち込みガイド + FAQ
 │   ├── tmux-dashboard-operation.md   # tmux ダッシュボード運用ガイド (ドッグフーディング成果)
 │   └── genshijin.md                  # genshijin モード使い方メモ
-├── hooks/                   # 8 hook スクリプト + statusline
-├── agents/                  # 7 agent 定義
+├── hooks/                            # 8 hook スクリプト + statusline
+├── agents/                           # 7 agent 定義
 └── skills/
     ├── <skill-name>/
     │   ├── SKILL.md
     │   └── evals/evals.json
-    └── <skill-name>-workspace/  # eval 実行結果 (.gitignore 除外)
+    └── <skill-name>-workspace/       # eval 実行結果 (.gitignore 除外)
 ```
 
 ## 配置方法
