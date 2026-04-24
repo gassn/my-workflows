@@ -101,7 +101,7 @@ skill 単体では強制力が弱いため、hook で挙動を物理的に固定
 ワークフロー全体の継続的改善とプロジェクト公開を検討します。
 
 - [ ] **全フェーズの統合テスト**: 実プロジェクトでの試用 (本リポジトリ自身を題材にドッグフーディング、Phase 6 バッチ 2 で tmux-dashboard-mvp 題材にて着手中)
-- [ ] **skill-creator による各 skill の eval iteration**: 定量評価と反復改善
+- [~] **skill-creator による各 skill の eval iteration**: 2026-04-24 時点で記述ベース実証完了 (spec-leader iter-5 / writing-plan iter-5 / learn iter-2 の 3 skill で Try 5.1 / 5.3 / 5.4 / 5.5 の改修効果を SKILL.md 反映整合性として検証済、docs/phase6-progress.md §4 参照)。LLM 再実行による定量 Delta 測定 (without_skill vs with_skill の出力比較) は Phase 6 バッチ 3 以降の専用セッションで実施予定
 - [x] **CLAUDE.md の体系化**: プロジェクト横断の共通ルールと個別ルールの分離 (2026-04-23 バッチ 1 完了、160→128 行スリム化、skill/agent 詳細を components-map に委任)
 - [x] **memory 運用の最適化**: 記憶すべき情報とそうでない情報の線引き整備 (2026-04-23 バッチ 1 完了、`docs/memory-operation.md` 新設で方針明文化)
 - [x] **プロジェクト全体のドキュメント整備** (2026-04-23 バッチ 1 で README / CLAUDE.md 更新、Phase 3-5 完了レポート 3 点セット + components-map + hookify-setup + memory-operation で体系完成)
